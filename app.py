@@ -193,15 +193,25 @@ elif menu == "💪 Health Line":
         else:
             water_message = None
 
-        # แสดงข้อความ
+        
+        # แสดงข้อความตามจำนวนแก้วและเปลี่ยนสี
         if water_count == 8:
             st.success("ภารกิจเช็กการดื่มน้ำครบแล้ว! เยี่ยมเลย 💧")
-        else:
+
+        elif water_count <= 3:
             st.markdown(
-                f"<p style='color:#e05252; font-size:12px;'>"
+                f"<p style='color:#F39C12; font-size:12px;'>"
                 f"💬 {water_message}</p>",
                 unsafe_allow_html=True
             )
+
+        else:
+            st.markdown(
+                f"<p style='color:#3498DB; font-size:12px;'>"
+                f"💬 {water_message}</p>",
+                unsafe_allow_html=True
+            )
+
 
         st.session_state["previous_water_count"] = water_count
 
