@@ -49,46 +49,47 @@ if menu == "📊 หน้าแรก & สรุปผลรวม":
     st.text(f"🎯 Goal: {st.session_state.item_name} (ราคา {st.session_state.goal:,.2f} บาท)")
     
     # ตรรกะแจ้งเตือนเงินออมดั้งเดิมของคุณ
+    
     far = st.session_state.goal - st.session_state.balance
     unfar = st.session_state.balance - st.session_state.goal
-    
-        if st.session_state.goal > 0:
-    	if far > 0:
-        	messages = [
- 				f"คุณยังขาดเงินอีก {far:,.2f} บาทนะ แล้ว **{st.session_state.item_name}** ที่คุณอยากได้ล่ะ? ",
-      				f"ขาดอีกแค่ {far:,.2f} บาทเองงงง อีกนิดเดียวก็ได้แล้ว 🤏🤏 ",
-            	f"เอ้าท่องพร้อมกันนน เพื่อ **{st.session_state.item_name}**  เพื่อ **{st.session_state.item_name}**  เพื่อ **{st.session_state.item_name}**  😀",
-            	"อย่าเพิ่งยอมแพ้ ความสำเร็จมันต้องใช้เวลานะ ! 👊",
-            	"วันนี้อาจยังไม่ถึง แต่คุณต้องทำได้แน่ !",
-            	f"ลำบากตอนนี้ เดี๋ยวตอนได้  **{st.session_state.item_name}** ก็สบายแล้ววว 😣😣"
-        	]
-        	message = random.choice(messages)
-        	st.info(f"💬 {message}")
-        
-	elif far == 0:
+
+    if st.session_state.goal > 0:
+        if far > 0:
             messages = [
- 			f"เย้ !! คุณสามารถซื้อ **{st.session_state.item_name}** ได้แล้ว 🎉🎉 ",
-      			"ยินดีด้วยยยย คุณทำสำเร็จแล้ว ",
-            "ได้แล้วววว นี่แหละชัยชนะ ฮ่าฮ่าฮ่า",
-            f"เห็นมั้ยหล่ะ **{st.session_state.item_name}** มันก็อยู่ใกล้แค่เอื้อมเท่านั้นแหละ",
-            "สบายมาก 💪💪",
-            "ได้เวลาสำหรับของชิ้นต่อไปแล้ว 🤩🤩",
-            ]    
+                f"คุณยังขาดเงินอีก {far:,.2f} บาทนะ แล้ว **{st.session_state.item_name}** ที่คุณอยากได้ล่ะ?",
+                f"ขาดอีกแค่ {far:,.2f} บาทเองงงง อีกนิดเดียวก็ได้แล้ว 🤏🤏",
+                f"เอ้าท่องพร้อมกันนน เพื่อ **{st.session_state.item_name}** เพื่อ **{st.session_state.item_name}** 😀",
+                "อย่าเพิ่งยอมแพ้ ความสำเร็จมันต้องใช้เวลานะ! 👊",
+                "วันนี้อาจยังไม่ถึง แต่คุณต้องทำได้แน่!",
+                f"ลำบากตอนนี้ เดี๋ยวตอนได้ **{st.session_state.item_name}** ก็สบายแล้ววว 😣😣"
+            ]
             message = random.choice(messages)
-            st.info(f"💬 {message}")
+            st.info(message)
+
+        elif far == 0:
+            messages = [
+                f"เย้!! คุณสามารถซื้อ **{st.session_state.item_name}** ได้แล้ว 🎉🎉",
+                "ยินดีด้วยยยย คุณทำสำเร็จแล้ว!",
+                "ได้แล้วววว นี่แหละชัยชนะ ฮ่าฮ่าฮ่า",
+                f"เห็นมั้ยล่ะ **{st.session_state.item_name}** อยู่ใกล้แค่เอื้อมเท่านั้นแหละ",
+                "สบายมาก 💪💪",
+                "ได้เวลาสำหรับของชิ้นต่อไปแล้ว 🤩🤩"
+            ]
+            message = random.choice(messages)
+            st.info(message)
 
         else:
             messages = [
- 			f"ตอนนี้คุณสามารถซื้อ **{st.session_state.item_name}** ได้เป็นร้อยอันแล้วม้าง ",
-      			"คุณนี่อัจฉริยะด้านการเก็บเงินชัดๆ !!",
-            f"ทำได้แล้วว และยังเก็บเกินเงินมาตั้ง  {unfar:,.2f} บาทแหละ",
-            f"เห็นมั้ยหล่ะ **{st.session_state.item_name}** มันก็อยู่ใกล้แค่เอื้อมเท่านั้นแหละ",
-            "สบายมาก 💪💪",
-            "คุณมีเงินเกินแล้ว ซื้อได้ทั้งบริษัทแล้วมั้งเนี่ย 💰",
-                        "อนาคตเศรษฐีพันล้านรึป่าวเนี่ยย 💸💸",
-            ]    
+                f"ตอนนี้คุณสามารถซื้อ **{st.session_state.item_name}** ได้เป็นร้อยอันแล้วม้าง",
+                "คุณนี่อัจฉริยะด้านการเก็บเงินชัดๆ!!",
+                f"ทำได้แล้วว และยังมีเงินเกินมาอีกตั้ง {unfar:,.2f} บาทแหละ",
+                f"เห็นมั้ยล่ะ **{st.session_state.item_name}** อยู่ใกล้แค่เอื้อมเท่านั้นแหละ",
+                "สบายมาก 💪💪",
+                "คุณมีเงินเกินแล้ว ซื้อได้ทั้งบริษัทแล้วมั้งเนี่ย 💰",
+                "อนาคตเศรษฐีพันล้านรึป่าวเนี่ยย 💸💸"
+            ]
             message = random.choice(messages)
-            st.info(f"💬 {message}")
+            st.info(message)
 
 # ------------------------------------------
 # MENU: Money Line
