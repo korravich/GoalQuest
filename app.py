@@ -147,6 +147,7 @@ elif menu == "💪 Health Line":
         st.caption(f"ความคืบหน้า: {done}/{total}")
         st.progress(done / total)
 
+
     # 1. ภารกิจดื่มน้ำ
     with st.expander("💧 ภารกิจที่ 1: วันนี้ดื่มน้ำครบ 8 แก้วหรือยัง?"):
         st.write("เติมพลังให้ร่างกาย จิบน้ำให้เหมาะกับความต้องการของตัวเอง!")
@@ -164,65 +165,49 @@ elif menu == "💪 Health Line":
 
         water_count = sum(water_done)
 
-        
-# 1. ภารกิจดื่มน้ำ
-with st.expander("💧 ภารกิจที่ 1: วันนี้ดื่มน้ำครบ 8 แก้วหรือยัง?"):
-    st.write("เติมพลังให้ร่างกาย จิบน้ำให้เหมาะกับความต้องการของตัวเอง!")
+        # เลือกข้อความตามจำนวนแก้ว
+        if water_count == 0:
+            water_message = "วันนี้คุณยังไม่ได้เช็กการดื่มน้ำเลยนะ 💧"
 
-    # สร้างช่องเช็กและแบ่งเป็น 4 คอลัมน์
-    water_cols = st.columns(4)
-    water_done = []
+        elif water_count <= 3:
+            water_message = "ปากแห้งเป็นทะเลทรายแล้วมั้งเนี่ย 🏜️"
 
-    for i in range(8):
-        with water_cols[i % 4]:
-            checked = st.checkbox(
-                f"แก้วที่ {i + 1}",
-                key=f"water_{i + 1}",
-                on_change=lambda: st.session_state.update(
-                    water_tip=random.choice([
-                        "พักแล้วจิบน้ำสักหน่อยมั้ยย 💧",
-                        "น้ำช่วยให้ร่างกายทำงานได้ดีตามปกตินะ อย่าลืมล่ะ!",
-                        "ไม่ต้องรีบดื่มรวดเดียว ค่อย ๆ จิบระหว่างวันเอานะ 😉😉"
-                    ])
-                )
+        elif water_count < 8:
+            # สุ่มใหม่เมื่อจำนวนแก้วเปลี่ยน
+            previous_count = st.session_state.get(
+                "previous_water_count", -1
             )
-            water_done.append(checked)
 
-    water_count = sum(water_done)
+            if water_count != previous_count:
+                st.session_state["water_tip"] = random.choice([
+                    "พักแล้วจิบน้ำสักหน่อยมั้ยย 💧",
+                    "น้ำช่วยให้ร่างกายทำงานได้ดีตามปกตินะ อย่าลืมล่ะ!",
+                    "ไม่ต้องรีบดื่มรวดเดียว ค่อย ๆ จิบระหว่างวันเอานะ 😉😉"
+                ])
 
-    if water_count == 0:
-        st.markdown(
-            "<p style='color:#e05252; font-size:12px;'>"
-            "💬 วันนี้คุณยังไม่ได้ดื่มน้ำเลยนะ 💧</p>",
-            unsafe_allow_html=True
-        )
+            water_message = st.session_state.get(
+                "water_tip",
+                "พักแล้วจิบน้ำสักหน่อยมั้ยย 💧"
+            )
 
-    elif water_count <= 3:
-        st.markdown(
-            "<p style='color:#e05252; font-size:12px;'>"
-            "💬 ปากแห้งเป็นทะเลทรายแล้วมั้งเนี่ย 🏜️</p>",
-            unsafe_allow_html=True
-        )
+        else:
+            water_message = None
 
-    elif water_count < 8:
-        if "water_tip" not in st.session_state:
-            st.session_state.water_tip = random.choice([
-                "พักแล้วจิบน้ำสักหน่อยมั้ยย 💧",
-                "น้ำช่วยให้ร่างกายทำงานได้ดีตามปกตินะ อย่าลืมล่ะ!",
-                "ไม่ต้องรีบดื่มรวดเดียว ค่อย ๆ จิบระหว่างวันเอานะ 😉😉"
-            ])
+        # แสดงข้อความ
+        if water_count == 8:
+            st.success("ภารกิจเช็กการดื่มน้ำครบแล้ว! เยี่ยมเลย 💧")
+        else:
+            st.markdown(
+                f"<p style='color:#e05252; font-size:12px;'>"
+                f"💬 {water_message}</p>",
+                unsafe_allow_html=True
+            )
 
-        st.markdown(
-            f"<p style='color:#e05252; font-size:12px;'>"
-            f"💬 {st.session_state.water_tip}</p>",
-            unsafe_allow_html=True
-        )
+        st.session_state["previous_water_count"] = water_count
 
-    else:
-        st.success("ภารกิจเช็กการดื่มน้ำครบแล้ว! เยี่ยมเลย 💧")
+        st.caption(f"ความคืบหน้า: {water_count}/8")
+        st.progress(water_count / 8)
 
-    st.caption(f"ความคืบหน้า: {water_count}/8")
-    st.progress(water_count / 8)
 
 
     # 2. ภารกิจรับประทานอาหาร
