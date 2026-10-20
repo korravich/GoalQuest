@@ -198,12 +198,20 @@ elif menu == "💪 Health Line":
         if water_count == 8:
             st.success("ภารกิจเช็กการดื่มน้ำครบแล้ว! เยี่ยมเลย 💧")
 
+        elif water_count == 0:
+            st.markdown(
+                "<p style='color:#E53935; font-size:12px;'>"
+                "💬 วันนี้คุณยังไม่ได้เช็กการดื่มน้ำเลยนะ 💧</p>",
+                unsafe_allow_html=True
+            )
+
         elif water_count <= 3:
             st.markdown(
                 f"<p style='color:#F39C12; font-size:12px;'>"
                 f"💬 {water_message}</p>",
                 unsafe_allow_html=True
             )
+
 
         else:
             st.markdown(
