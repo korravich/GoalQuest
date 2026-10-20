@@ -1,0 +1,123 @@
+import streamlit as st
+import os
+
+# ตั้งค่าหน้าตาของเว็บไซต์ให้น่ารักและจัดกึ่งกลาง
+st.set_page_config(page_title="Goal Quest", page_icon="⚔️", layout="centered")
+st.title("⚔️ GOAL QUEST ⚔️")
+st.caption("แอปพลิเคชันพัฒนาตัวเองและรักษาสมดุลชีวิต (เวอร์ชันทดลอง)")
+st.write("---")
+
+# ==========================================
+# 💾 ระบบหลังบ้าน: โหลดข้อมูลจากไฟล์ .txt
+# ==========================================
+if "balance" not in st.session_state:
+    try:
+        with open("money.txt", "r", encoding="utf-8") as file:
+            st.session_state.balance = float(file.read())
+    except FileNotFoundError:
+        st.session_state.balance = 0.0
+
+if "goal" not in st.session_state:
+    try:
+        with open("goal.txt", "r", encoding="utf-8") as file:
+            st.session_state.goal = float(file.read())
+    except FileNotFoundError:
+        st.session_state.goal = 0.0
+
+if "item_name" not in st.session_state:
+    try:
+        with open("item.txt", "r", encoding="utf-8") as file:
+            st.session_state.item_name = file.read()
+    except FileNotFoundError:
+        st.session_state.item_name = "สิ่งที่อยากได้"
+
+# ==========================================
+# 🧭 ระบบเมนูหลัก (Sidebar ด้านข้าง)
+# ==========================================
+menu = st.sidebar.radio("เลือกภารกิจของคุณ:", ["📊 หน้าแรก & สรุปผลรวม", "💰 Money Line", "🧘‍♂️ Health Line"])
+
+# ------------------------------------------
+# MENU: หน้าแรก & สรุปผลรวม
+# ------------------------------------------
+if menu == "📊 หน้าแรก & สรุปผลรวม":
+    st.subheader("🏆 ห้องโถงสะสมความสำเร็จประจำวัน")
+    st.write("ยินดีต้อนรับอัศวิน! นี่คือภาพรวมสถานะชีวิตของคุณในตอนนี้")
+    
+    # แสดงกล่องสถานะเงินออมปัจจุบัน
+    st.metric(label="💰 ยอดเงินออมคงเหลือในระบบ", value=f"{st.session_state.balance:,.2f} บาท")
+    st.text(f"🎯 เป้าหมายเก็บเงินเพื่อซื้อ: {st.session_state.item_name} (ราคาเป้าหมาย {st.session_state.goal:,.2f} บาท)")
+    
+    # ตรรกะแจ้งเตือนเงินออมดั้งเดิมของคุณ
+    far = st.session_state.goal - st.session_state.balance
+    unfar = st.session_state.balance - st.session_state.goal
+    
+    if st.session_state.goal > 0:
+        if far > 0:
+            st.info(f"🤖 บอทเตือนใจ: คุณยังขาดเงินอีก {far:,.2f} บาท แล้ว **{st.session_state.item_name}** ที่คุณอยากได้ล่ะ? ออมเพิ่มอีกนิดนะ!")
+        elif far == 0:
+            st.success(f"🎉 ยินดีด้วย! คุณเก็บเงินซื้อ **{st.session_state.item_name}** สำเร็จตามเป้าหมายแล้ว!")
+        else:
+            st.success(f"🥳 ยินดีด้วย! คุณมีเงินเกินเป้าหมายของ **{st.session_state.item_name}** มา {unfar:,.2f} บาทแล้ว!")
+
+# ------------------------------------------
+# MENU: Money Line
+# ------------------------------------------
+elif menu == "💰 Money Line":
+    st.subheader("💰 Money Line: วางแผนการเงินเพื่อเป้าหมาย")
+    
+    # ช่องรับข้อมูลเป้าหมายเฉพาะเจาะจง
+    item = st.text_input("คุณกำลังเก็บเงินไปเพื่อซื้ออะไร? (เช่น หูฟัง, เกม):", value=st.session_state.item_name)
+    target_goal = st.number_input("ของชิ้นนั้นราคากี่บาท?:", min_value=0.0, value=st.session_state.goal, step=100.0)
+    
+    if st.button("บันทึกเป้าหมายการซื้อของ"):
+        st.session_state.item_name = item
+        st.session_state.goal = target_goal
+        with open("item.txt", "w", encoding="utf-8") as file:
+            file.write(item)
+        with open("goal.txt", "w", encoding="utf-8") as file:
+            file.write(str(target_goal))
+        st.success("บันทึกข้อมูลเป้าหมายใหม่เรียบร้อยแล้ว!")
+    
+    st.write("---")
+    st.write("### บันทึกรายรับ-รายจ่ายของวันนี้")
+    income = st.number_input("วันนี้ได้เงินกี่บาท💰:", min_value=0.0, value=0.0)
+    expense = st.number_input("วันนี้ใช้จ่ายกี่บาท💸:", min_value=0.0, value=0.0)
+    
+    if st.button("คำนวณและบันทึกยอดเงินวันนี้"):
+        # ตรรกะบวกสมุดบัญชีเดิมของคุณ
+        st.session_state.balance = st.session_state.balance + income - expense
+        with open("money.txt", "w", encoding="utf-8") as file:
+            file.write(str(st.session_state.balance))
+            
+        st.success("อัปเดตกระเป๋าเงินออนไลน์เรียบร้อยแล้ว! ลองกลับไปดูหน้าแรกเพื่อเช็คสถานะเป้าหมาย")
+
+# ------------------------------------------
+# MENU: Health Line
+# ------------------------------------------
+elif menu == "🧘‍♂️ Health Line":
+    st.subheader("🧘‍♂️ Health Line: เช็คลิสต์ความสมดุลของร่างกายประจำวัน")
+    st.write("วันนี้คุณรักษาสุขภาพพื้นฐานครบถ้วนแล้วหรือยัง? ติ๊กถูกเพื่อบันทึกสถิติ:")
+    
+    # ระบบเช็คลิสต์พฤติกรรมพื้นฐานเข้าถึงง่ายสำหรับทุกคน
+    water = st.checkbox("💧 วันนี้ดื่มน้ำครบ 8 แก้ว (ประมาณ 2 ลิตร)")
+    meals = st.checkbox("🍚 วันนี้กินข้าวครบทั้ง 3 มื้อ")
+    on_time = st.checkbox("⏰ วันนี้กินข้าวตรงเวลา ไม่ปล่อยให้ท้องว่าง")
+    sleep = st.checkbox("🛌 นอนหลับพักผ่อนเต็มอิ่ม (7-8 ชั่วโมง)")
+    move = st.checkbox("🚶 ได้ขยับร่างกายเบาๆ ยืดเส้นยืดสาย หรือเดินสลับระหว่างวัน")
+    
+    if st.button("บันทึกคะแนนสุขภาพประจำวัน"):
+        st.success("บันทึกพฤติกรรมเรียบร้อย! รักษาวินัยแบบนี้ในทุกๆ วันนะครับ")
+
+# ------------------------------------------
+# 🧹 ปุ่มล้างข้อมูลทั้งหมด (เมนูด้านซ้ายล่าง)
+# ------------------------------------------
+st.sidebar.write("---")
+if st.sidebar.button("🧹 รีเซ็ตข้อมูลทั้งหมด"):
+    for f in ["money.txt", "goal.txt", "item.txt"]:
+        if os.path.exists(f):
+            os.remove(f)
+    st.session_state.balance = 0.0
+    st.session_state.goal = 0.0
+    st.session_state.item_name = "สิ่งที่อยากได้"
+    st.sidebar.warning("ล้างข้อมูลเรียบร้อยแล้ว!")
+    st.rerun()
