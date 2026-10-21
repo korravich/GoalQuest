@@ -246,52 +246,43 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
     border-color: #75baff;
 }
 
-/* ซ่อนวงกลม Radio และสีของปุ่มที่ถูกเลือก */
+
+/* ซ่อนวงกลม Radio */
 section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
     display: none !important;
 }
 
-section[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"] {
-    display: none !important;
+/* รูปแบบแถบเมนู */
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    display: flex !important;
+    align-items: center !important;
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(160, 190, 230, 0.18) !important;
+    border-radius: 14px !important;
+    padding: 14px 16px !important;
+    min-height: 54px !important;
+    gap: 0 !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-section[data-testid="stSidebar"] div[role="radiogroup"] label > div {
-    gap: 0 !important;
+/* เมื่อนำเมาส์ไปชี้ */
+section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    background-color: rgba(75, 145, 230, 0.20) !important;
+    border-color: #75baff !important;
 }
 
 /* ข้อความเมนู */
 section[data-testid="stSidebar"] div[role="radiogroup"] label p {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
 }
 
-/* ซ่อนวงกลม Radio ทั้งหมด */
-section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child,
-section[data-testid="stSidebar"] div[role="radiogroup"] label input[type="radio"],
+/* ซ่อนวงกลมและสีของตัวเลือก Radio */
+section[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"],
 section[data-testid="stSidebar"] div[role="radiogroup"] label svg {
     display: none !important;
-    visibility: hidden !important;
-    width: 0 !important;
-    height: 0 !important;
 }
-
-/* ปรับช่องว่างของเมนู */
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    gap: 0 !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-st.sidebar.markdown(
-    "<h1 style='font-size:30px; margin-bottom:18px;'>QUEST</h1>",
-    unsafe_allow_html=True
-)
-
-menu = st.sidebar.radio(
-    "เลือกหน้า",
-    ["🎯 สรุปผล", "💰 Money Line", "💪 Health Line"],
-    label_visibility="collapsed"
-)
 
 # ------------------------------------------
 # MENU: หน้าแรก & สรุปผล
