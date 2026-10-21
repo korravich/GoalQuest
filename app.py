@@ -447,7 +447,7 @@ section[data-testid="stSidebar"] * { color: #14213d; }
 .gq-row { display: flex; align-items: center; gap: 10px; }
 .gq-banner b { color: #fff !important; font-size: 20px; }
 .gq-banner span { color: #dbe6f7 !important; font-size: 13px; display: block; margin-top: 4px; }
-.gq-title { font-size: 44px; font-weight: 800; letter-spacing: 2px; line-height: 1.1; margin: 0 0 6px 0; }
+.gq-title { font-size: 80px; font-weight: 1000; letter-spacing: 2px; line-height: 1.1; margin: 0 0 6px 0; }
 .gq-sub { font-size: 14px; color: #5b6b82 !important; margin-bottom: 10px; }
 
 section[data-testid="stSidebar"] div[role="radiogroup"] { gap: 10px; }
@@ -531,7 +531,7 @@ st.sidebar.markdown(
     "</svg>"
     "<b>Goal Quest</b>"
     "</div>"
-    "<span>Small steps, big dreams.</span>"
+    "<span>Your Future Depends on What You Do Today.</span>"
     "</div>"
     "<p class='gq-title'>QUEST</p>"
     "<p class='gq-sub'>เลือกเมนูที่ต้องการ</p>",
