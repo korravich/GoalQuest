@@ -24,6 +24,9 @@ session_supabase = create_client(
     st.secrets["SUPABASE_SERVICE_ROLE_KEY"]
 )
 cookie_controller = CookieController()
+
+if not cookie_controller.ready():
+    st.stop()
 def save_persistent_session(user_id, access_token, refresh_token):
     try:
         token = secrets.token_urlsafe(32)
