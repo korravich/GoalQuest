@@ -268,24 +268,41 @@ if menu == "🎯สรุปผล":
             message = random.choice(messages)
             st.info(message)
 
+
 # ------------------------------------------
 # MENU: Money Line
 # ------------------------------------------
 elif menu == "💰 Money Line":
     st.subheader("💰 Money Line: วางแผนการเงินเพื่อเป้าหมาย")
-    
+
     # ช่องรับข้อมูลเป้าหมายเฉพาะเจาะจง
-    item = st.text_input("คุณกำลังเก็บเงินไปเพื่อซื้ออะไร? (เช่น หูฟัง, เกม):", value=st.session_state.item_name)
-    target_goal = st.number_input("ของชิ้นนั้นราคากี่บาท?:", min_value=0.0, value=st.session_state.goal, step=100.0)
-    
+    item = st.text_input(
+        "คุณกำลังเก็บเงินไปเพื่อซื้ออะไร? (เช่น หูฟัง, เกม):",
+        value=st.session_state.item_name
+    )
+    target_goal = st.number_input(
+        "ของชิ้นนั้นราคากี่บาท?:",
+        min_value=0.0,
+        value=st.session_state.goal,
+        step=100.0
+    )
+
     if st.button("บันทึกเป้าหมายการซื้อของ"):
-        st.session_state.item_name = item
-        st.session_state.goal = target_goal
-        with open("item.txt", "w", encoding="utf-8") as file:
-            file.write(item)
-        with open("goal.txt", "w", encoding="utf-8") as file:
-            file.write(str(target_goal))
-        st.success("บันทึกข้อมูลเป้าหมายใหม่เรียบร้อยแล้ว!")
+        try:
+            supabase.table("player_data").update({
+                "item": item,
+                "goal": str(target_goal)
+            }).eq(
+                "user_id", st.session_state["user_id"]
+            ).execute()
+
+            st.session_state.item_name = item
+            st.session_state.goal = target_goal
+
+            st.success("บันทึกข้อมูลเป้าหมายใหม่เรียบร้อยแล้ว!")
+
+        except Exception as e:
+            st.error(f"บันทึกเป้าหมายไม่สำเร็จ: {e}")
     
     st.write("---")
     st.write("### บันทึกรายรับ-รายจ่ายของวันนี้")
