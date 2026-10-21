@@ -2,6 +2,7 @@ import os
 import random
 import streamlit as st
 from supabase import create_client
+from streamlit_cookies_controller import CookieController
 
 # ตั้งค่าหน้าตาเว็บไซต์
 st.set_page_config(
