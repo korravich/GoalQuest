@@ -8,6 +8,7 @@ from supabase import create_client
 from streamlit_cookies_controller import CookieController
 import time
 import pandas as pd
+import altair as alt
 
 # ตั้งค่าหน้าตาเว็บไซต์
 st.set_page_config(
@@ -147,14 +148,50 @@ def load_monthly(uid):
     return pd.DataFrame(rows).set_index("เดือน")
 
 
-def show_bar_chart(df):
-    left, right = st.columns(2)
-    with left:
-        st.markdown("**💰 รายรับ**")
-        st.bar_chart(df[["รายรับ"]], color="#2ECC71", height=300)
-    with right:
-        st.markdown("**💸 รายจ่าย**")
-        st.bar_chart(df[["รายจ่าย"]], color="#E74C3C", height=300)
+def show_bar_chart(df, monthly=False):
+    """กราฟเดียว แท่งรายรับ (เขียว) กับรายจ่าย (แดง) อยู่ข้างกัน"""
+    data = df.reset_index()
+    time_col = data.columns[0]          # "วันที่" หรือ "เดือน"
+    data = data.melt(
+        id_vars=time_col,
+        value_vars=["รายรับ", "รายจ่าย"],
+        var_name="ประเภท",
+        value_name="จำนวนเงิน"
+    )
+
+    # ป้ายแกน X
+    if monthly:
+        data["label"] = data[time_col].dt.strftime("%m/%Y")
+    else:
+        data["label"] = data[time_col].dt.strftime("%d/%m")
+
+    order = list(dict.fromkeys(data["label"]))   # เรียงตามเวลา
+
+    chart = (
+        alt.Chart(data)
+        .mark_bar()
+        .encode(
+            x=alt.X(
+                "label:N",
+                sort=order,
+                title=None,
+                axis=alt.Axis(labelAngle=-45)
+            ),
+            xOffset=alt.XOffset("ประเภท:N", sort=["รายรับ", "รายจ่าย"]),
+            y=alt.Y("จำนวนเงิน:Q", title="บาท"),
+            color=alt.Color(
+                "ประเภท:N",
+                scale=alt.Scale(
+                    domain=["รายรับ", "รายจ่าย"],
+                    range=["#2ECC71", "#E74C3C"]
+                ),
+                legend=alt.Legend(title=None, orient="top")
+            ),
+            tooltip=["label", "ประเภท", "จำนวนเงิน"]
+        )
+        .properties(height=380)
+    )
+    st.altair_chart(chart, use_container_width=True)
 
 # หัวเว็บไซต์
 st.title("⚔️ Goal Quest ⚔️")
@@ -542,8 +579,9 @@ if menu == "🎯สรุปผล":
 
             if total_in == 0 and total_out == 0:
                 st.info(f"ใน {days} วันที่ผ่านมายังไม่มีการบันทึก")
-            else:
-                show_bar_chart(df)
+                else:
+            show_bar_chart(df, monthly=True)
+            table = df.copy()
 
     except Exception as e:
         st.error(f"โหลดกราฟไม่สำเร็จ: {e}")
