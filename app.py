@@ -246,9 +246,17 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
     border-color: #75baff;
 }
 
-/* ซ่อนวงกลมเดิม */
+/* ซ่อนวงกลม Radio และสีของปุ่มที่ถูกเลือก */
 section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
-    display: none;
+    display: none !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"] {
+    display: none !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] label > div {
+    gap: 0 !important;
 }
 
 /* ข้อความเมนู */
