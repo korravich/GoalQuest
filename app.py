@@ -210,10 +210,12 @@ if "player_data_loaded" not in st.session_state:
         st.stop()
 
 
+
 # ==========================================
 # 🧭 ระบบเมนูหลัก (Sidebar ด้านข้าง)
 # ==========================================
 
+# CSS สำหรับตกแต่งเมนู
 st.sidebar.markdown("""
 <style>
 /* ชื่อ QUEST */
@@ -256,23 +258,20 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p {
     margin: 0 !important;
 }
 
-/* ซ่อนปุ่มวงกลม Radio */
+/* ซ่อนตัวเลือก Radio */
 section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
-    display: none !important;
-}
-
-section[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"],
-section[data-testid="stSidebar"] div[role="radiogroup"] label svg {
     display: none !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
+# หัวข้อ QUEST
 st.sidebar.markdown(
     "<h1 style='font-size:34px; margin:4px 0 20px 0;'>QUEST</h1>",
     unsafe_allow_html=True
 )
 
+# เมนูหลัก
 menu = st.sidebar.radio(
     "เลือกหน้า",
     ["🎯สรุปผล", "💰 Money Line", "💪 Health Line"],
