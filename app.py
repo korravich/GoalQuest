@@ -306,13 +306,12 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
     border-color: #75baff !important;
 }
 
-/* ซ่อนวงกลม: ซ่อนทุกอย่างใน label ที่ไม่ใช่ข้อความ */
-section[data-testid="stSidebar"] div[role="radiogroup"] label > div:not([data-testid="stMarkdownContainer"]),
+/* ซ่อนวงกลม: ซ่อนเฉพาะ div ที่ไม่มีข้อความอยู่ข้างใน */
+section[data-testid="stSidebar"] div[role="radiogroup"] label > div:not(:has([data-testid="stMarkdownContainer"])),
 section[data-testid="stSidebar"] div[role="radiogroup"] label input[type="radio"],
 section[data-testid="stSidebar"] div[role="radiogroup"] label svg {
     display: none !important;
 }
-
 /* ไฮไลต์ปุ่มที่ถูกเลือก (เพราะไม่มีวงกลมบอกแล้ว) */
 section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
     background-color: rgba(75, 145, 230, 0.30) !important;
