@@ -162,29 +162,52 @@ if st.button("ออกจากระบบ"):
 st.write("---")
 
 
-# ==========================================
-# 💾 ระบบหลังบ้าน: โหลดข้อมูลจากไฟล์ .txt
-# ==========================================
-if "balance" not in st.session_state:
-    try:
-        with open("money.txt", "r", encoding="utf-8") as file:
-            st.session_state.balance = float(file.read())
-    except FileNotFoundError:
-        st.session_state.balance = 0.0
 
-if "goal" not in st.session_state:
-    try:
-        with open("goal.txt", "r", encoding="utf-8") as file:
-            st.session_state.goal = float(file.read())
-    except FileNotFoundError:
-        st.session_state.goal = 0.0
+# ==========================================
+# 💾 ระบบหลังบ้าน: โหลดข้อมูลจาก Supabase
+# ==========================================
 
-if "item_name" not in st.session_state:
+if "player_data_loaded" not in st.session_state:
     try:
-        with open("item.txt", "r", encoding="utf-8") as file:
-            st.session_state.item_name = file.read()
-    except FileNotFoundError:
-        st.session_state.item_name = "สิ่งที่อยากได้"
+        user_id = st.session_state["user_id"]
+
+        # โหลดข้อมูลของบัญชีที่เข้าสู่ระบบอยู่เท่านั้น
+        response = (
+            supabase.table("player_data")
+            .select("*")
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if response.data:
+            player_data = response.data[0]
+        else:
+            # สร้างข้อมูลเริ่มต้นสำหรับผู้เล่นใหม่
+            new_player = {
+                "user_id": user_id,
+                "balance": 0,
+                "goal": "0",
+                "item": "สิ่งที่อยากได้"
+            }
+
+            supabase.table("player_data").insert(
+                new_player
+            ).execute()
+
+            player_data = new_player
+
+        st.session_state.balance = float(
+            player_data["balance"]
+        )
+        st.session_state.goal = float(
+            player_data["goal"]
+        )
+        st.session_state.item_name = player_data["item"]
+        st.session_state.player_data_loaded = True
+
+    except Exception as e:
+        st.error(f"โหลดข้อมูลไม่สำเร็จ: {e}")
+        st.stop()
 
 # ==========================================
 # 🧭 ระบบเมนูหลัก (Sidebar ด้านข้าง)
