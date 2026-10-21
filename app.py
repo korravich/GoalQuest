@@ -280,7 +280,7 @@ elif menu == "💪 Health Line":
                 unsafe_allow_html=True
             )
 
-        elif meal_count == 2:
+        elif meal_count == 1:
             st.markdown(
                 f"<p style='color:#F39C12; font-size:12px;'>"
                 f"💬 {meal_message}</p>",
@@ -302,7 +302,6 @@ elif menu == "💪 Health Line":
         st.progress(meal_count / 3)
 
 
-        )
 
     # 3. ภารกิจกินอาหารให้สม่ำเสมอ
     with st.expander("⏰ ภารกิจที่ 3: วันนี้ได้พักกินข้าวเป็นเวลาหรือยัง?"):
