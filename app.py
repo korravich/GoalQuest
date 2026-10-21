@@ -426,32 +426,60 @@ elif menu == "💰 Money Line":
             st.error(f"บันทึกเป้าหมายไม่สำเร็จ: {e}")
     
     st.write("---")
-    st.write("### บันทึกรายรับ-รายจ่ายของวันนี้")
-    income = st.number_input("วันนี้ได้เงินกี่บาท💰:", min_value=0.0, value=0.0)
-    expense = st.number_input("วันนี้ใช้จ่ายกี่บาท💸:", min_value=0.0, value=0.0)
-    
-    
-    if st.button("คำนวณและบันทึกยอดเงินวันนี้"):
-        try:
-            new_balance = (
-                st.session_state.balance + income - expense
-            )
+    st.write("### บันทึกรายรับ-รายจ่าย")
 
-            supabase.table("player_data").update({
-                "balance": new_balance
-            }).eq(
-                "user_id", st.session_state["user_id"]
-            ).execute()
+    today = datetime.now(timezone(timedelta(hours=7))).date()  # เวลาไทย
+    record_date = st.date_input(
+        "วันที่",
+        value=today,
+        min_value=today - timedelta(days=30),
+        max_value=today
+    )
+    income = st.number_input("ได้เงินกี่บาท💰:", min_value=0.0, value=0.0)
+    expense = st.number_input("ใช้จ่ายกี่บาท💸:", min_value=0.0, value=0.0)
 
-            st.session_state.balance = new_balance
+    if st.button("คำนวณและบันทึกยอดเงิน"):
+        if income == 0 and expense == 0:
+            st.warning("กรุณากรอกรายรับหรือรายจ่ายอย่างน้อยหนึ่งช่อง")
+        else:
+            try:
+                uid = st.session_state["user_id"]
 
-            st.success(
-                "อัปเดตกระเป๋าเงินเรียบร้อยแล้ว! "
-                "ลองกลับไปดูหน้าแรกเพื่อเช็กยอดเงิน"
-            )
+                # 1) บันทึกลง daily_records (ถ้ามีวันนั้นอยู่แล้วให้บวกทบ)
+                existing = (
+                    supabase.table("daily_records")
+                    .select("income, expense")
+                    .eq("user_id", uid)
+                    .eq("record_date", record_date.isoformat())
+                    .execute()
+                )
 
-        except Exception as e:
-            st.error(f"บันทึกยอดเงินไม่สำเร็จ: {e}")
+                old_income = float(existing.data[0]["income"]) if existing.data else 0.0
+                old_expense = float(existing.data[0]["expense"]) if existing.data else 0.0
+
+                supabase.table("daily_records").upsert({
+                    "user_id": uid,
+                    "record_date": record_date.isoformat(),
+                    "income": old_income + income,
+                    "expense": old_expense + expense
+                }).execute()
+
+                # 2) อัปเดตยอดเงินเก็บปัจจุบัน
+                new_balance = st.session_state.balance + income - expense
+
+                supabase.table("player_data").update({
+                    "balance": new_balance
+                }).eq("user_id", uid).execute()
+
+                st.session_state.balance = new_balance
+
+                st.success(
+                    "บันทึกเรียบร้อยแล้ว! "
+                    "ลองกลับไปดูหน้าแรกเพื่อเช็กยอดเงิน"
+                )
+
+            except Exception as e:
+                st.error(f"บันทึกยอดเงินไม่สำเร็จ: {e}")
 
 
     st.write("---")
