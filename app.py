@@ -264,6 +264,21 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p {
     font-size: 16px;
     font-weight: 600;
 }
+
+/* ซ่อนวงกลม Radio ทั้งหมด */
+section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child,
+section[data-testid="stSidebar"] div[role="radiogroup"] label input[type="radio"],
+section[data-testid="stSidebar"] div[role="radiogroup"] label svg {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* ปรับช่องว่างของเมนู */
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    gap: 0 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
