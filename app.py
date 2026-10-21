@@ -306,18 +306,12 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
     border-color: #75baff !important;
 }
 
-/* ซ่อนวงกลม: แยกเป็นหลายกฎ ไม่ให้พังพร้อมกัน */
-section[data-testid="stSidebar"] div[role="radiogroup"] label input[type="radio"] {
+/* ซ่อนวงกลม: ซ่อน div ที่อยู่ก่อนกล่องข้อความ */
+section[data-testid="stSidebar"] label[data-testid="stRadioOption"] > div > div:first-child {
     display: none !important;
 }
 
-section[data-testid="stSidebar"] div[role="radiogroup"] label svg {
-    display: none !important;
-}
-
-section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child:not(:last-child) {
-    display: none !important;
-}/* ไฮไลต์ปุ่มที่ถูกเลือก (เพราะไม่มีวงกลมบอกแล้ว) */
+/* ไฮไลต์ปุ่มที่ถูกเลือก (เพราะไม่มีวงกลมบอกแล้ว) */
 section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
     background-color: rgba(75, 145, 230, 0.30) !important;
     border-color: #75baff !important;
