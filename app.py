@@ -1,5 +1,8 @@
 import os
 import random
+import hashlib
+import secrets
+from datetime import datetime, timedelta, timezone
 import streamlit as st
 from supabase import create_client
 from streamlit_cookies_controller import CookieController
@@ -16,6 +19,31 @@ SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+session_supabase = create_client(
+    SUPABASE_URL,
+    st.secrets["SUPABASE_SERVICE_ROLE_KEY"]
+)
+cookie_controller = CookieController()
+def save_persistent_session(user_id, access_token, refresh_token):
+    token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    expires = datetime.now(timezone.utc) + timedelta(days=30)
+
+    session_supabase.table("user_sessions").insert({
+        "user_id": user_id,
+        "token_hash": token_hash,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expires_at": expires.isoformat()
+    }).execute()
+
+    cookie_controller.set(
+        "gq_session",
+        token,
+        max_age=30 * 24 * 60 * 60,
+        secure=True,
+        same_site="lax"
+    )
 
 # หัวเว็บไซต์
 st.title("⚔️ Goal Quest ⚔️")
@@ -28,8 +56,44 @@ st.write("---")
 # ==========================================
 
 # คืนสถานะการเข้าสู่ระบบจาก Streamlit session
+# คืนสถานะล็อกอินจาก session ที่บันทึกไว้
+cookie_token = cookie_controller.get("gq_session")
+
+if "user_id" not in st.session_state and cookie_token:
+    try:
+        token_hash = hashlib.sha256(
+            cookie_token.encode()
+        ).hexdigest()
+
+        response = (
+            session_supabase.table("user_sessions")
+            .select("*")
+            .eq("token_hash", token_hash)
+            .gt("expires_at", datetime.now(timezone.utc).isoformat())
+            .maybe_single()
+            .execute()
+        )
+
+        saved = response.data
+
+        if saved:
+            supabase.auth.set_session(
+                saved["access_token"],
+                saved["refresh_token"]
+            )
+            st.session_state["user_id"] = saved["user_id"]
+            st.session_state["access_token"] = saved["access_token"]
+            st.session_state["refresh_token"] = saved["refresh_token"]
+
+            user_result = supabase.auth.get_user()
+            if user_result.user:
+                st.session_state["user_email"] = user_result.user.email or ""
+    except Exception:
+        pass
+
 if (
-    "access_token" in st.session_state
+    "user_id" in st.session_state
+    and "access_token" in st.session_state
     and "refresh_token" in st.session_state
 ):
     try:
@@ -38,9 +102,7 @@ if (
             st.session_state["refresh_token"]
         )
     except Exception:
-        for key in ["access_token", "refresh_token", "user_id", "user_email"]:
-            st.session_state.pop(key, None)
-
+        pass
 # ถ้ายังไม่ได้เข้าสู่ระบบ ให้แสดงหน้าสมัครและล็อกอิน
 if "user_id" not in st.session_state:
     st.subheader("Start your goals")
@@ -52,10 +114,7 @@ if "user_id" not in st.session_state:
     with login_tab:
         with st.form("login_form"):
             login_email = st.text_input("อีเมล")
-            login_password = st.text_input(
-                "รหัสผ่าน",
-                type="password"
-            )
+            login_password = st.text_input("รหัสผ่าน", type="password")
             login_submit = st.form_submit_button(
                 "เข้าสู่ระบบ",
                 use_container_width=True
@@ -71,21 +130,18 @@ if "user_id" not in st.session_state:
                 if result.user and result.session:
                     st.session_state["user_id"] = result.user.id
                     st.session_state["user_email"] = result.user.email
-                    st.session_state["access_token"] = (
-                        result.session.access_token
-                    )
-                    st.session_state["refresh_token"] = (
+                    st.session_state["access_token"] = result.session.access_token
+                    st.session_state["refresh_token"] = result.session.refresh_token
+
+                    save_persistent_session(
+                        result.user.id,
+                        result.session.access_token,
                         result.session.refresh_token
                     )
                     st.rerun()
 
             except Exception:
-                st.error(
-                    "เข้าสู่ระบบไม่สำเร็จ "
-                    "โปรดตรวจสอบอีเมล รหัสผ่าน "
-                    "หรือการยืนยันอีเมล"
-                )
-
+                st.error("เข้าสู่ระบบไม่สำเร็จ โปรดตรวจสอบอีเมล รหัสผ่าน หรือการยืนยันอีเมล")
     with signup_tab:
         with st.form("signup_form"):
             signup_email = st.text_input("อีเมลสำหรับสมัคร")
@@ -118,15 +174,16 @@ if "user_id" not in st.session_state:
 
                     if result.session and result.user:
                         st.session_state["user_id"] = result.user.id
-                        st.session_state["user_email"] = (
-                            result.user.email
-                        )
-                        st.session_state["access_token"] = (
-                            result.session.access_token
-                        )
-                        st.session_state["refresh_token"] = (
+                        st.session_state["user_email"] = result.user.email
+                        st.session_state["access_token"] = result.session.access_token
+                        st.session_state["refresh_token"] = result.session.refresh_token
+
+                        save_persistent_session(
+                            result.user.id,
+                            result.session.access_token,
                             result.session.refresh_token
                         )
+
                         st.success("สมัครสมาชิกสำเร็จ!")
                         st.rerun()
                     else:
@@ -138,7 +195,6 @@ if "user_id" not in st.session_state:
 
                 except Exception as e:
                     st.error(f"สมัครสมาชิกไม่สำเร็จ: {e}")
-
 
     # ยังไม่เข้าสู่ระบบ ห้ามแสดงส่วนเกมด้านล่าง
     st.stop()
@@ -791,13 +847,24 @@ if st.session_state.get("confirm_reset_all", False):
             st.session_state["confirm_reset_all"] = False
             st.rerun()
 
-# ปุ่มออกจากระบบ อยู่ใกล้กับปุ่มรีเซ็ต
-if st.sidebar.button(
-    "🚪 ออกจากระบบ",
-    use_container_width=True
-):
+# ปุ่มออกจากระบบ
+if st.sidebar.button("🚪 ออกจากระบบ", use_container_width=True):
     try:
+        cookie_token = cookie_controller.get("gq_session")
+
+        if cookie_token:
+            token_hash = hashlib.sha256(
+                cookie_token.encode()
+            ).hexdigest()
+
+            session_supabase.table("user_sessions") \
+                .delete() \
+                .eq("token_hash", token_hash) \
+                .execute()
+
+        cookie_controller.remove("gq_session")
         supabase.auth.sign_out()
+
     except Exception:
         pass
 
