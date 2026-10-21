@@ -25,26 +25,29 @@ session_supabase = create_client(
 )
 cookie_controller = CookieController()
 def save_persistent_session(user_id, access_token, refresh_token):
-    token = secrets.token_urlsafe(32)
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
-    expires = datetime.now(timezone.utc) + timedelta(days=30)
+    try:
+        token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        expires = datetime.now(timezone.utc) + timedelta(days=30)
 
-    session_supabase.table("user_sessions").insert({
-        "user_id": user_id,
-        "token_hash": token_hash,
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "expires_at": expires.isoformat()
-    }).execute()
+        session_supabase.table("user_sessions").insert({
+            "user_id": user_id,
+            "token_hash": token_hash,
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "expires_at": expires.isoformat()
+        }).execute()
 
-    cookie_controller.set(
-        "gq_session",
-        token,
-        max_age=30 * 24 * 60 * 60,
-        secure=True,
-        same_site="lax"
-    )
+        cookie_controller.set(
+            "gq_session",
+            token,
+            max_age=30 * 24 * 60 * 60,
+            secure=True,
+            same_site="lax"
+        )
 
+    except Exception as e:
+        st.error(f"บันทึก session ไม่สำเร็จ: {e}")
 # หัวเว็บไซต์
 st.title("⚔️ Goal Quest ⚔️")
 st.caption("Your Future Depends on What You Do Today (beta)")
