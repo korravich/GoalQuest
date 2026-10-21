@@ -438,7 +438,12 @@ if "player_data_loaded" not in st.session_state:
 st.sidebar.markdown("""
 <style>
 section[data-testid="stSidebar"] { background: #f1f5fb; }
-section[data-testid="stSidebar"] * { color: #14213d; }
+
+/* สีตัวอักษรเฉพาะส่วนเมนู (ไม่ไปแตะปุ่มรีเซ็ต/ออกจากระบบ) */
+.gq-title, .gq-sub,
+section[data-testid="stSidebar"] div[role="radiogroup"] label p {
+    color: #14213d;
+}
 
 .gq-banner {
     background: #14213d; border-radius: 14px;
@@ -460,26 +465,23 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label {
     border-radius: 14px !important;
     padding: 12px 14px !important; min-height: 70px !important;
     transition: background-color .2s, border-color .2s;
+    cursor: pointer;
 }
 section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
     border-color: #75baff !important;
 }
 
-/* ไฮไลต์ปุ่มที่ถูกเลือก */
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+/* ไฮไลต์หน้าที่เลือกอยู่ */
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked),
+section[data-testid="stSidebar"] label[data-testid="stRadioOption"][data-selected="true"] {
     background: #dbeafe !important;
     border-color: #4b91e6 !important;
 }
 
 /* ซ่อนวงกลมของ radio */
-section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child,
 section[data-testid="stSidebar"] label[data-testid="stRadioOption"] > div > div:first-child,
 section[data-testid="stSidebar"] label[data-baseweb="radio"] > div:first-child {
     display: none !important;
-}
-/* กันไม่ให้ซ่อนกล่องข้อความ */
-section[data-testid="stSidebar"] div[role="radiogroup"] label > div:last-child {
-    display: block !important;
 }
 
 /* กล่องไอคอนด้านซ้าย */
@@ -491,16 +493,19 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label::before {
 }
 
 /* 1) กราฟแท่ง - กล่องสีฟ้า */
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(1)::before,
 section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(1) label::before {
     background-color: #cfe3ff;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f6fd6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20h16M7 20v-6M12 20V8M17 20v-9'/%3E%3C/svg%3E");
 }
 /* 2) กระเป๋าเงิน - กล่องสีเหลือง */
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(2)::before,
 section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(2) label::before {
     background-color: #fff0bf;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d99a00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='7' width='18' height='13' rx='3'/%3E%3Cpath d='M5 7l10-3v3'/%3E%3Crect x='14' y='11' width='7' height='5' rx='2.5'/%3E%3Cpath d='M17.5 13.5h.01'/%3E%3C/svg%3E");
 }
 /* 3) หัวใจ - กล่องสีเขียว */
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(3)::before,
 section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(3) label::before {
     background-color: #d3f4e2;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f9d6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20s-8-5-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 9c0 6-8 11-8 11z'/%3E%3C/svg%3E");
@@ -518,9 +523,18 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p {
 section[data-testid="stSidebar"] div[role="radiogroup"] label p::after {
     display: block; font-size: 13px; font-weight: 400; color: #5b6b82;
 }
-section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(1) label p::after { content: "ดูภาพรวมเป้าหมายของคุณ"; }
-section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(2) label p::after { content: "วางแผนเงินเก็บของคุณ"; }
-section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(3) label p::after { content: "ติดตามการดูแลตัวเอง"; }
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(1) p::after,
+section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(1) label p::after {
+    content: "ดูภาพรวมเป้าหมายของคุณ";
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(2) p::after,
+section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(2) label p::after {
+    content: "วางแผนเงินเก็บของคุณ";
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(3) p::after,
+section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(3) label p::after {
+    content: "ติดตามการดูแลตัวเอง";
+}
 </style>
 """, unsafe_allow_html=True)
 
