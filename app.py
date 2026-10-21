@@ -151,7 +151,7 @@ def load_monthly(uid):
 def show_bar_chart(df, monthly=False):
     """กราฟเดียว แท่งรายรับ (เขียว) กับรายจ่าย (แดง) อยู่ข้างกัน"""
     data = df.reset_index()
-    time_col = data.columns[0]          # "วันที่" หรือ "เดือน"
+    time_col = data.columns[0]
     data = data.melt(
         id_vars=time_col,
         value_vars=["รายรับ", "รายจ่าย"],
@@ -159,17 +159,23 @@ def show_bar_chart(df, monthly=False):
         value_name="จำนวนเงิน"
     )
 
-    # ป้ายแกน X
     if monthly:
         data["label"] = data[time_col].dt.strftime("%m/%Y")
     else:
         data["label"] = data[time_col].dt.strftime("%d/%m")
 
-    order = list(dict.fromkeys(data["label"]))   # เรียงตามเวลา
+    order = list(dict.fromkeys(data["label"]))
+
+    # เผื่อที่ว่างเหนือแท่งสูงสุดอีก 20% (แก้เลข 1.2 ได้)
+    max_val = float(data["จำนวนเงิน"].max())
+    y_max = max_val * 1.2 if max_val > 0 else 100
 
     chart = (
         alt.Chart(data)
-        .mark_bar()
+        .mark_bar(
+            cornerRadiusTopLeft=6,
+            cornerRadiusTopRight=6
+        )
         .encode(
             x=alt.X(
                 "label:N",
@@ -178,7 +184,11 @@ def show_bar_chart(df, monthly=False):
                 axis=alt.Axis(labelAngle=-45)
             ),
             xOffset=alt.XOffset("ประเภท:N", sort=["รายรับ", "รายจ่าย"]),
-            y=alt.Y("จำนวนเงิน:Q", title="บาท"),
+            y=alt.Y(
+                "จำนวนเงิน:Q",
+                title="บาท",
+                scale=alt.Scale(domain=[0, y_max])
+            ),
             color=alt.Color(
                 "ประเภท:N",
                 scale=alt.Scale(
@@ -189,9 +199,9 @@ def show_bar_chart(df, monthly=False):
             ),
             tooltip=["label", "ประเภท", "จำนวนเงิน"]
         )
-        .properties(height=380)
+        .properties(height=380, width=520)
     )
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, use_container_width=False)
 
 # หัวเว็บไซต์
 st.title("⚔️ Goal Quest ⚔️")
