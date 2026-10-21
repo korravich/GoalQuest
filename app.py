@@ -382,7 +382,7 @@ elif menu == "💰 Money Line":
     st.subheader("🧹 จัดการเงินเก็บ")
 
     if st.button("ล้างเงินเก็บ", key="reset_balance"):
-        st.session_state["show_reset_balance_confirm"] = True
+        st.session_state["show_reset_balance_confirm"] = True					
 
     if st.session_state.get("confirm_reset_balance", False):
         st.warning(
