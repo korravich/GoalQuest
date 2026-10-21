@@ -579,21 +579,47 @@ section[data-testid="stSidebar"].gq-shut {
     transform: translateX(calc(-100% + 20px)) !important;
 }
 
-/* การ์ดเมนูยาวขึ้น + QUEST ใหญ่ขึ้น */
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    min-height: clamp(76px, 15vh, 170px) !important;
+/* ===== การ์ดเมนูยืดตามความกว้างของ sidebar ===== */
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
+section[data-testid="stSidebar"] div[data-testid="stRadio"],
+section[data-testid="stSidebar"] div[role="radiogroup"] {
+    width: 100% !important;
+    max-width: 100% !important;
 }
+
+/* ความสูงการ์ดกลับเป็นปกติ (ไม่ใหญ่ขึ้นแนวตั้ง) */
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    width: 100% !important;
+    min-height: 76px !important;
+    box-sizing: border-box !important;
+    transition: background-color .2s, border-color .2s, padding .45s ease;
+}
+
+/* ตอนขยายเต็มจอ: เว้นขอบสองข้างเล็กน้อย ให้การ์ดยาวเต็มหน้า */
+section[data-testid="stSidebar"].gq-full [data-testid="stSidebarUserContent"] {
+    padding-left: 5vw !important;
+    padding-right: 5vw !important;
+}
+section[data-testid="stSidebar"].gq-full div[role="radiogroup"] label {
+    padding-left: 5vw !important;
+    padding-right: 5vw !important;
+}
+
+/* ขนาดไอคอนและตัวอักษร */
 section[data-testid="stSidebar"] div[role="radiogroup"] label::before {
-    width: 54px !important; height: 54px !important;
-    background-size: 30px !important;
+    width: 50px !important; height: 50px !important;
+    background-size: 28px !important;
 }
 section[data-testid="stSidebar"] div[role="radiogroup"] label p {
-    font-size: 19px !important;
+    font-size: 18px !important;
 }
 section[data-testid="stSidebar"] div[role="radiogroup"] label p::after {
     font-size: 14px !important;
 }
-.gq-title { font-size: 72px !important; }
+
+/* QUEST ลดลงจาก 72px */
+.gq-title { font-size: 60px !important; }
 
 </style>
 """, unsafe_allow_html=True)
