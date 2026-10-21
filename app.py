@@ -215,52 +215,100 @@ if "player_data_loaded" not in st.session_state:
 # 🧭 ระบบเมนูหลัก (Sidebar ด้านข้าง)
 # ==========================================
 
-# CSS สำหรับตกแต่งเมนู
 st.sidebar.markdown("""
 <style>
-/* ชื่อ QUEST */
+/* ===== ธีมหลักของ GoalQuest ===== */
+.stApp {
+    background-color: #0B1220 !important;
+    color: #EAF2FF !important;
+}
+
+[data-testid="stHeader"] {
+    background-color: #0B1220 !important;
+}
+
+section[data-testid="stSidebar"] {
+    background-color: #0B1220 !important;
+    border-right: 1px solid rgba(117, 184, 255, 0.16);
+}
+
+/* พื้นหลังภายใน Sidebar */
+section[data-testid="stSidebar"] > div {
+    background-color: #0B1220 !important;
+}
+
+/* ===== หัวข้อ QUEST ===== */
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2 {
-    color: #eaf2ff;
-    font-weight: 800;
-    letter-spacing: 2px;
+    color: #EAF2FF !important;
+    font-weight: 800 !important;
+    letter-spacing: 2px !important;
 }
 
-/* ระยะห่างระหว่างเมนู */
+/* ===== ระยะห่างเมนู ===== */
 section[data-testid="stSidebar"] div[role="radiogroup"] {
-    gap: 10px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
 }
 
-/* กล่องเมนู */
+/* ===== กล่องเมนู ===== */
 section[data-testid="stSidebar"] div[role="radiogroup"] label {
     display: flex !important;
     align-items: center !important;
-    background-color: rgba(255, 255, 255, 0.06) !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-height: 54px !important;
+    padding: 14px 16px !important;
+    gap: 0 !important;
+
+    background-color: #162238 !important;
     border: 1px solid rgba(160, 190, 230, 0.18) !important;
     border-radius: 14px !important;
-    padding: 14px 16px !important;
-    min-height: 54px !important;
-    gap: 0 !important;
+
     transition: background-color 0.2s ease,
                 border-color 0.2s ease;
 }
 
-/* เอฟเฟกต์เมื่อนำเมาส์ไปชี้ */
+/* เอฟเฟกต์เมื่อชี้เมาส์ */
 section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-    background-color: rgba(75, 145, 230, 0.20) !important;
-    border-color: #75baff !important;
+    background-color: #203653 !important;
+    border-color: #75B8FF !important;
 }
 
 /* ข้อความเมนู */
 section[data-testid="stSidebar"] div[role="radiogroup"] label p {
+    color: #EAF2FF !important;
     font-size: 16px !important;
     font-weight: 600 !important;
     margin: 0 !important;
 }
 
-/* ซ่อนตัวเลือก Radio */
+/* ซ่อนตัวเลือกวงกลมของ Radio */
+section[data-testid="stSidebar"] div[role="radiogroup"] label [data-baseweb="radio"] {
+    display: none !important;
+}
+
 section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
     display: none !important;
+}
+
+/* ปรับสีข้อความทั่วไปใน Sidebar */
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] label {
+    color: #EAF2FF;
+}
+
+/* รองรับหน้าจอมือถือ */
+@media (max-width: 768px) {
+    section[data-testid="stSidebar"] {
+        background-color: #0B1220 !important;
+    }
+
+    section[data-testid="stSidebar"] div[role="radiogroup"] label {
+        min-height: 50px !important;
+        padding: 12px 14px !important;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -271,7 +319,7 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-# เมนูหลัก
+# เมนูหลัก — คงตัวเลือกเดิมเพื่อรักษาการทำงาน
 menu = st.sidebar.radio(
     "เลือกหน้า",
     ["🎯สรุปผล", "💰 Money Line", "💪 Health Line"],
