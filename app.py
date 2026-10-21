@@ -47,6 +47,8 @@ def save_persistent_session(user_id, access_token, refresh_token):
             same_site="lax"
         )
 
+        st.write("ส่งคำสั่งบันทึกคุกกี้แล้ว")
+    
     except Exception as e:
         st.error(f"บันทึก session ไม่สำเร็จ: {e}")
 # หัวเว็บไซต์
