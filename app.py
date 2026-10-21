@@ -1,9 +1,22 @@
-import streamlit as st
 import os
 import random
+import streamlit as st
+from supabase import create_client
 
-# ตั้งค่าหน้าตาของเว็บไซต์ให้น่ารักและจัดกึ่งกลาง
-st.set_page_config(page_title="Goal Quest", page_icon="⚔️", layout="centered")
+# ตั้งค่าหน้าตาเว็บไซต์
+st.set_page_config(
+    page_title="Goal Quest",
+    page_icon="⚔️",
+    layout="centered"
+)
+
+# ระบบเชื่อมต่อ Supabase
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# หัวเว็บไซต์
 st.title("⚔️ Goal Quest ⚔️")
 st.caption("Your Future Depends on What You Do Today (beta)")
 st.write("---")
@@ -445,7 +458,7 @@ elif menu == "💪 Health Line":
 
 # ------------------------------------------
 # 🧹 ปุ่มล้างข้อมูลทั้งหมด (เมนูด้านซ้ายล่าง)
-# ------------------------------------------
+# ------------------------------------------ผท
 st.sidebar.write("---")
 if st.sidebar.button("🧹 รีเซ็ตข้อมูลทั้งหมด"):
     for f in ["money.txt", "goal.txt", "item.txt"]:
