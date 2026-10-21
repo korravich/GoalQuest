@@ -21,6 +21,149 @@ st.title("⚔️ Goal Quest ⚔️")
 st.caption("Your Future Depends on What You Do Today (beta)")
 st.write("---")
 
+
+# ==========================================
+# ระบบสมัครสมาชิกและเข้าสู่ระบบ
+# ==========================================
+
+# คืนสถานะการเข้าสู่ระบบจาก Streamlit session
+if (
+    "access_token" in st.session_state
+    and "refresh_token" in st.session_state
+):
+    try:
+        supabase.auth.set_session(
+            st.session_state["access_token"],
+            st.session_state["refresh_token"]
+        )
+    except Exception:
+        for key in ["access_token", "refresh_token", "user_id", "user_email"]:
+            st.session_state.pop(key, None)
+
+# ถ้ายังไม่ได้เข้าสู่ระบบ ให้แสดงหน้าสมัครและล็อกอิน
+if "user_id" not in st.session_state:
+    st.subheader("⚔️ เข้าสู่โลก Goal Quest")
+
+    login_tab, signup_tab = st.tabs(
+        ["เข้าสู่ระบบ", "สมัครสมาชิก"]
+    )
+
+    with login_tab:
+        with st.form("login_form"):
+            login_email = st.text_input("อีเมล")
+            login_password = st.text_input(
+                "รหัสผ่าน",
+                type="password"
+            )
+            login_submit = st.form_submit_button(
+                "เข้าสู่ระบบ",
+                use_container_width=True
+            )
+
+        if login_submit:
+            try:
+                result = supabase.auth.sign_in_with_password({
+                    "email": login_email.strip(),
+                    "password": login_password
+                })
+
+                if result.user and result.session:
+                    st.session_state["user_id"] = result.user.id
+                    st.session_state["user_email"] = result.user.email
+                    st.session_state["access_token"] = (
+                        result.session.access_token
+                    )
+                    st.session_state["refresh_token"] = (
+                        result.session.refresh_token
+                    )
+                    st.rerun()
+
+            except Exception:
+                st.error(
+                    "เข้าสู่ระบบไม่สำเร็จ "
+                    "โปรดตรวจสอบอีเมล รหัสผ่าน "
+                    "หรือการยืนยันอีเมล"
+                )
+
+    with signup_tab:
+        with st.form("signup_form"):
+            signup_email = st.text_input("อีเมลสำหรับสมัคร")
+            signup_password = st.text_input(
+                "ตั้งรหัสผ่าน",
+                type="password"
+            )
+            signup_password_again = st.text_input(
+                "ยืนยันรหัสผ่าน",
+                type="password"
+            )
+            signup_submit = st.form_submit_button(
+                "สมัครสมาชิก",
+                use_container_width=True
+            )
+
+        if signup_submit:
+            if not signup_email.strip():
+                st.error("กรุณากรอกอีเมล")
+            elif len(signup_password) < 8:
+                st.error("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร")
+            elif signup_password != signup_password_again:
+                st.error("รหัสผ่านทั้งสองช่องไม่ตรงกัน")
+            else:
+                try:
+                    result = supabase.auth.sign_up({
+                        "email": signup_email.strip(),
+                        "password": signup_password
+                    })
+
+                    if result.session and result.user:
+                        st.session_state["user_id"] = result.user.id
+                        st.session_state["user_email"] = (
+                            result.user.email
+                        )
+                        st.session_state["access_token"] = (
+                            result.session.access_token
+                        )
+                        st.session_state["refresh_token"] = (
+                            result.session.refresh_token
+                        )
+                        st.success("สมัครสมาชิกสำเร็จ!")
+                        st.rerun()
+                    else:
+                        st.success(
+                            "ส่งคำขอสมัครแล้ว "
+                            "กรุณาตรวจอีเมลเพื่อยืนยันบัญชี "
+                            "ก่อนเข้าสู่ระบบ"
+                        )
+
+                except Exception:
+                    st.error(
+                        "สมัครสมาชิกไม่สำเร็จ "
+                        "โปรดตรวจสอบอีเมลและการตั้งค่า Supabase"
+                    )
+
+    # ยังไม่เข้าสู่ระบบ ห้ามแสดงส่วนเกมด้านล่าง
+    st.stop()
+
+# แสดงบัญชีที่กำลังใช้งาน
+st.caption(
+    "บัญชีที่เข้าสู่ระบบ: "
+    + str(st.session_state.get("user_email", "ผู้เล่น"))
+)
+
+if st.button("ออกจากระบบ"):
+    try:
+        supabase.auth.sign_out()
+    except Exception:
+        pass
+
+    for key in ["access_token", "refresh_token", "user_id", "user_email"]:
+        st.session_state.pop(key, None)
+
+    st.rerun()
+
+st.write("---")
+
+
 # ==========================================
 # 💾 ระบบหลังบ้าน: โหลดข้อมูลจากไฟล์ .txt
 # ==========================================
