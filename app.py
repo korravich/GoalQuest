@@ -444,9 +444,10 @@ section[data-testid="stSidebar"] * { color: #14213d; }
     background: #14213d; border-radius: 14px;
     padding: 14px 16px; margin-bottom: 18px;
 }
+.gq-row { display: flex; align-items: center; gap: 10px; }
 .gq-banner b { color: #fff !important; font-size: 20px; }
-.gq-banner span { color: #dbe6f7 !important; font-size: 13px; display: block; }
-.gq-title { font-size: 30px; font-weight: 800; margin: 0 0 4px 0; }
+.gq-banner span { color: #dbe6f7 !important; font-size: 13px; display: block; margin-top: 4px; }
+.gq-title { font-size: 44px; font-weight: 800; letter-spacing: 2px; line-height: 1.1; margin: 0 0 6px 0; }
 .gq-sub { font-size: 14px; color: #5b6b82 !important; margin-bottom: 10px; }
 
 section[data-testid="stSidebar"] div[role="radiogroup"] { gap: 10px; }
@@ -482,19 +483,23 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label::before {
     content: ""; flex: none; width: 44px; height: 44px;
     margin-right: 14px; border-radius: 12px;
     background-repeat: no-repeat; background-position: center;
-    background-size: 24px;
+    background-size: 26px;
 }
+
+/* 1) กราฟแท่ง - กล่องสีฟ้า */
 section[data-testid="stSidebar"] div[role="radiogroup"] label:nth-of-type(1)::before {
-    background-color: #fff;
-    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f6fd6' stroke-width='2' stroke-linecap='round'><path d='M6 20v-6M12 20V6M18 20v-9'/></svg>");
+    background-color: #cfe3ff;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f6fd6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 20h16M7 20v-6M12 20V8M17 20v-9'/></svg>");
 }
+/* 2) กระเป๋าเงิน - กล่องสีเหลือง */
 section[data-testid="stSidebar"] div[role="radiogroup"] label:nth-of-type(2)::before {
-    background-color: #ffecd2;
-    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d9822b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 7h14a2 2 0 012 2v9a2 2 0 01-2 2H6a2 2 0 01-2-2V7zm0 0V6a2 2 0 012-2h11M16 14h2'/></svg>");
+    background-color: #fff0bf;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d99a00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='7' width='18' height='13' rx='3'/><path d='M5 7l10-3v3'/><rect x='14' y='11' width='7' height='5' rx='2.5'/><path d='M17.5 13.5h.01'/></svg>");
 }
+/* 3) หัวใจ - กล่องสีเขียว */
 section[data-testid="stSidebar"] div[role="radiogroup"] label:nth-of-type(3)::before {
-    background-color: #dcf5e8;
-    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f9d6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10zM7 12h3l1.5-2 2 4 1.5-2h2'/></svg>");
+    background-color: #d3f4e2;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f9d6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 20s-8-5-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 9c0 6-8 11-8 11z'/></svg>");
 }
 
 /* ลูกศรด้านขวา */
@@ -516,8 +521,18 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label:nth-of-type(3) p::
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown(
-    "<div class='gq-banner'><b>🎯 Goal Quest</b>"
-    "<span>Small steps, big dreams.</span></div>"
+    "<div class='gq-banner'>"
+    "<div class='gq-row'>"
+    "<svg width='28' height='28' viewBox='0 0 28 28' fill='none' "
+    "stroke='#6ea8ff' stroke-width='2.2' xmlns='http://www.w3.org/2000/svg'>"
+    "<circle cx='14' cy='14' r='11'/>"
+    "<circle cx='14' cy='14' r='6.5'/>"
+    "<circle cx='14' cy='14' r='2' fill='#6ea8ff'/>"
+    "</svg>"
+    "<b>Goal Quest</b>"
+    "</div>"
+    "<span>Small steps, big dreams.</span>"
+    "</div>"
     "<p class='gq-title'>QUEST</p>"
     "<p class='gq-sub'>เลือกเมนูที่ต้องการ</p>",
     unsafe_allow_html=True
@@ -528,6 +543,7 @@ menu = st.sidebar.radio(
     ["🎯สรุปผล", "💰 Money Line", "💪 Health Line"],
     label_visibility="collapsed"
 )
+
 # ------------------------------------------
 # MENU: หน้าแรก & สรุปผล
 # ------------------------------------------
