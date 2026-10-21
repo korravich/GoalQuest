@@ -209,10 +209,66 @@ if "player_data_loaded" not in st.session_state:
         st.error(f"โหลดข้อมูลไม่สำเร็จ: {e}")
         st.stop()
 
+
 # ==========================================
 # 🧭 ระบบเมนูหลัก (Sidebar ด้านข้าง)
 # ==========================================
-menu = st.sidebar.radio("Quest", ["🎯สรุปผล", "💰 Money Line", "💪 Health Line"])
+
+st.sidebar.markdown("""
+<style>
+/* ชื่อ QUEST */
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2 {
+    color: #eaf2ff;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+/* พื้นที่เมนูแต่ละรายการ */
+section[data-testid="stSidebar"] div[role="radiogroup"] {
+    gap: 10px;
+}
+
+/* เมนูปกติ */
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(160, 190, 230, 0.18);
+    border-radius: 14px;
+    padding: 14px 16px;
+    min-height: 54px;
+    transition: background-color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+/* เมื่อนำเมาส์ไปชี้ */
+section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
+    background-color: rgba(75, 145, 230, 0.20);
+    border-color: #75baff;
+}
+
+/* ซ่อนวงกลมเดิม */
+section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
+    display: none;
+}
+
+/* ข้อความเมนู */
+section[data-testid="stSidebar"] div[role="radiogroup"] label p {
+    font-size: 16px;
+    font-weight: 600;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown(
+    "<h1 style='font-size:30px; margin-bottom:18px;'>QUEST</h1>",
+    unsafe_allow_html=True
+)
+
+menu = st.sidebar.radio(
+    "เลือกหน้า",
+    ["🎯 สรุปผล", "💰 Money Line", "💪 Health Line"],
+    label_visibility="collapsed"
+)
 
 # ------------------------------------------
 # MENU: หน้าแรก & สรุปผล
