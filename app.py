@@ -224,35 +224,12 @@ section[data-testid="stSidebar"] h2 {
     letter-spacing: 2px;
 }
 
-/* พื้นที่เมนูแต่ละรายการ */
+/* ระยะห่างระหว่างเมนู */
 section[data-testid="stSidebar"] div[role="radiogroup"] {
     gap: 10px;
 }
 
-/* เมนูปกติ */
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    background-color: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(160, 190, 230, 0.18);
-    border-radius: 14px;
-    padding: 14px 16px;
-    min-height: 54px;
-    transition: background-color 0.2s ease,
-                border-color 0.2s ease;
-}
-
-/* เมื่อนำเมาส์ไปชี้ */
-section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-    background-color: rgba(75, 145, 230, 0.20);
-    border-color: #75baff;
-}
-
-
-/* ซ่อนวงกลม Radio */
-section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
-    display: none !important;
-}
-
-/* รูปแบบแถบเมนู */
+/* กล่องเมนู */
 section[data-testid="stSidebar"] div[role="radiogroup"] label {
     display: flex !important;
     align-items: center !important;
@@ -262,10 +239,11 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label {
     padding: 14px 16px !important;
     min-height: 54px !important;
     gap: 0 !important;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    transition: background-color 0.2s ease,
+                border-color 0.2s ease;
 }
 
-/* เมื่อนำเมาส์ไปชี้ */
+/* เอฟเฟกต์เมื่อนำเมาส์ไปชี้ */
 section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
     background-color: rgba(75, 145, 230, 0.20) !important;
     border-color: #75baff !important;
@@ -278,11 +256,28 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p {
     margin: 0 !important;
 }
 
-/* ซ่อนวงกลมและสีของตัวเลือก Radio */
+/* ซ่อนปุ่มวงกลม Radio */
+section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
+    display: none !important;
+}
+
 section[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"],
 section[data-testid="stSidebar"] div[role="radiogroup"] label svg {
     display: none !important;
 }
+</style>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown(
+    "<h1 style='font-size:34px; margin:4px 0 20px 0;'>QUEST</h1>",
+    unsafe_allow_html=True
+)
+
+menu = st.sidebar.radio(
+    "เลือกหน้า",
+    ["🎯สรุปผล", "💰 Money Line", "💪 Health Line"],
+    label_visibility="collapsed"
+)
 
 # ------------------------------------------
 # MENU: หน้าแรก & สรุปผล
