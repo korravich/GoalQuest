@@ -333,6 +333,53 @@ elif menu == "💰 Money Line":
             st.error(f"บันทึกยอดเงินไม่สำเร็จ: {e}")
 
 
+    st.write("---")
+    st.subheader("🧹 จัดการเงินเก็บ")
+
+    if st.button("ล้างเงินเก็บ", key="reset_balance"):
+        st.session_state["confirm_reset_balance"] = True
+
+    if st.session_state.get("confirm_reset_balance", False):
+        st.warning(
+            "⚠️ คุณกำลังจะตั้งยอดเงินเก็บเป็น 0 บาท "
+            "การดำเนินการนี้ไม่สามารถย้อนกลับได้ "
+            "แต่ชื่อเป้าหมายและราคาเป้าหมายจะไม่ถูกลบ"
+        )
+
+        confirm_col, cancel_col = st.columns(2)
+
+        with confirm_col:
+            if st.button(
+                "ยืนยันล้างเงินเก็บ",
+                key="confirm_reset_balance"
+            ):
+                try:
+                    supabase.table("player_data").update({
+                        "balance": 0
+                    }).eq(
+                        "user_id", st.session_state["user_id"]
+                    ).execute()
+
+                    st.session_state.balance = 0.0
+                    st.session_state["confirm_reset_balance"] = False
+
+                    st.success("ล้างเงินเก็บเรียบร้อยแล้ว!")
+                    st.rerun()
+
+                except Exception as e:
+                    st.error(f"ล้างเงินเก็บไม่สำเร็จ: {e}")
+
+        with cancel_col:
+            if st.button("ยกเลิก", key="cancel_reset_balance"):
+                st.session_state["confirm_reset_balance"] = False
+                st.rerun()
+
+    st.caption(
+        "หมายเหตุ: ปุ่มนี้จะล้างเฉพาะยอดเงินเก็บของบัญชีที่เข้าสู่ระบบ "
+        "ไม่ลบชื่อสิ่งของ ราคาเป้าหมาย หรือข้อมูลของผู้เล่นคนอื่น"
+    )
+
+    
 # ------------------------------------------
 # MENU: Health Line
 # ------------------------------------------
