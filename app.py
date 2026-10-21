@@ -437,55 +437,89 @@ if "player_data_loaded" not in st.session_state:
 
 st.sidebar.markdown("""
 <style>
-section[data-testid="stSidebar"] h1,
-section[data-testid="stSidebar"] h2 {
-    color: #eaf2ff;
-    font-weight: 800;
-    letter-spacing: 2px;
-}
+section[data-testid="stSidebar"] { background: #f1f5fb; }
+section[data-testid="stSidebar"] * { color: #14213d; }
 
-section[data-testid="stSidebar"] div[role="radiogroup"] {
-    gap: 10px;
+.gq-banner {
+    background: #14213d; border-radius: 14px;
+    padding: 14px 16px; margin-bottom: 18px;
 }
+.gq-banner b { color: #fff !important; font-size: 20px; }
+.gq-banner span { color: #dbe6f7 !important; font-size: 13px; display: block; }
+.gq-title { font-size: 30px; font-weight: 800; margin: 0 0 4px 0; }
+.gq-sub { font-size: 14px; color: #5b6b82 !important; margin-bottom: 10px; }
 
+section[data-testid="stSidebar"] div[role="radiogroup"] { gap: 10px; }
+
+/* การ์ดเมนู */
 section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    display: flex !important;
-    align-items: center !important;
-    background-color: rgba(255, 255, 255, 0.06) !important;
-    border: 1px solid rgba(160, 190, 230, 0.18) !important;
+    display: flex !important; align-items: center !important;
+    background: #fff !important;
+    border: 1px solid #e3eaf4 !important;
     border-radius: 14px !important;
-    padding: 14px 16px !important;
-    min-height: 54px !important;
-    gap: 0 !important;
-    transition: background-color 0.2s ease,
-                border-color 0.2s ease;
+    padding: 12px 14px !important; min-height: 70px !important;
+    transition: background-color .2s, border-color .2s;
 }
-
 section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-    background-color: rgba(75, 145, 230, 0.20) !important;
     border-color: #75baff !important;
 }
 
-/* ซ่อนวงกลม: ซ่อน div ที่อยู่ก่อนกล่องข้อความ */
-section[data-testid="stSidebar"] label[data-testid="stRadioOption"] > div > div:first-child {
+/* ไฮไลต์ปุ่มที่ถูกเลือก */
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+    background: #dbeafe !important;
+    border-color: #4b91e6 !important;
+}
+
+/* ซ่อนวงกลมของ radio */
+section[data-testid="stSidebar"] label[data-testid="stRadioOption"] > div > div:first-child,
+section[data-testid="stSidebar"] label[data-baseweb="radio"] > div:first-child,
+section[data-testid="stSidebar"] label[data-testid="stRadioOption"] > div:first-child {
     display: none !important;
 }
 
-/* ไฮไลต์ปุ่มที่ถูกเลือก (เพราะไม่มีวงกลมบอกแล้ว) */
-section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
-    background-color: rgba(75, 145, 230, 0.30) !important;
-    border-color: #75baff !important;
+/* กล่องไอคอนด้านซ้าย */
+section[data-testid="stSidebar"] div[role="radiogroup"] label::before {
+    content: ""; flex: none; width: 44px; height: 44px;
+    margin-right: 14px; border-radius: 12px;
+    background-repeat: no-repeat; background-position: center;
+    background-size: 24px;
 }
+section[data-testid="stSidebar"] div[role="radiogroup"] label:nth-of-type(1)::before {
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f6fd6' stroke-width='2' stroke-linecap='round'><path d='M6 20v-6M12 20V6M18 20v-9'/></svg>");
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] label:nth-of-type(2)::before {
+    background-color: #ffecd2;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d9822b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 7h14a2 2 0 012 2v9a2 2 0 01-2 2H6a2 2 0 01-2-2V7zm0 0V6a2 2 0 012-2h11M16 14h2'/></svg>");
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] label:nth-of-type(3)::before {
+    background-color: #dcf5e8;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f9d6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10zM7 12h3l1.5-2 2 4 1.5-2h2'/></svg>");
+}
+
+/* ลูกศรด้านขวา */
+section[data-testid="stSidebar"] div[role="radiogroup"] label::after {
+    content: "›"; margin-left: auto; font-size: 26px; color: #7a8aa3;
+}
+
+/* ชื่อเมนู + คำอธิบายบรรทัดที่สอง */
 section[data-testid="stSidebar"] div[role="radiogroup"] label p {
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    margin: 0 !important;
+    font-size: 16px !important; font-weight: 700 !important; margin: 0 !important;
 }
+section[data-testid="stSidebar"] div[role="radiogroup"] label p::after {
+    display: block; font-size: 13px; font-weight: 400; color: #5b6b82;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] label:nth-of-type(1) p::after { content: "ดูภาพรวมเป้าหมายของคุณ"; }
+section[data-testid="stSidebar"] div[role="radiogroup"] label:nth-of-type(2) p::after { content: "วางแผนเงินเก็บของคุณ"; }
+section[data-testid="stSidebar"] div[role="radiogroup"] label:nth-of-type(3) p::after { content: "ติดตามการดูแลตัวเอง"; }
 </style>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown(
-    "<h1 style='font-size:34px; margin:4px 0 20px 0;'>QUEST</h1>",
+    "<div class='gq-banner'><b>🎯 Goal Quest</b>"
+    "<span>Small steps, big dreams.</span></div>"
+    "<p class='gq-title'>QUEST</p>"
+    "<p class='gq-sub'>เลือกเมนูที่ต้องการ</p>",
     unsafe_allow_html=True
 )
 
@@ -494,7 +528,6 @@ menu = st.sidebar.radio(
     ["🎯สรุปผล", "💰 Money Line", "💪 Health Line"],
     label_visibility="collapsed"
 )
-
 # ------------------------------------------
 # MENU: หน้าแรก & สรุปผล
 # ------------------------------------------
