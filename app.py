@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 import streamlit as st
 from supabase import create_client
 from streamlit_cookies_controller import CookieController
+import time
 
 # ตั้งค่าหน้าตาเว็บไซต์
 st.set_page_config(
@@ -46,8 +47,6 @@ def save_persistent_session(user_id, access_token, refresh_token):
             secure=True,
             same_site="lax"
         )
-
-        st.write("ส่งคำสั่งบันทึกคุกกี้แล้ว")
     
     except Exception as e:
         st.error(f"บันทึก session ไม่สำเร็จ: {e}")
@@ -144,6 +143,7 @@ if "user_id" not in st.session_state:
                         result.session.access_token,
                         result.session.refresh_token
                     )
+                    time.sleep(1)
                     st.rerun()
 
             except Exception:
@@ -191,6 +191,7 @@ if "user_id" not in st.session_state:
                         )
 
                         st.success("สมัครสมาชิกสำเร็จ!")
+                        time.sleep(1)
                         st.rerun()
                     else:
                         st.success(
@@ -447,7 +448,7 @@ elif menu == "💰 Money Line":
     if st.button("ล้างเงินเก็บ", key="reset_balance"):
         st.session_state["show_reset_balance_confirm"] = True					
 
-    if st.session_state.get("confirm_reset_balance", False):
+    if st.session_state.get("show_reset_balance_confirm", False):
         st.warning(
             "⚠️ คุณกำลังจะตั้งยอดเงินเก็บเป็น 0 บาท "
             "การดำเนินการนี้ไม่สามารถย้อนกลับได้ "
@@ -885,5 +886,5 @@ if st.sidebar.button("🚪 ออกจากระบบ", use_container_width=
         "item_name",
     ]:
         st.session_state.pop(key, None)
-
+    time.sleep(1)
     st.rerun()
