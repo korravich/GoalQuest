@@ -7,6 +7,7 @@ import streamlit as st
 from supabase import create_client
 from streamlit_cookies_controller import CookieController
 import time
+import pandas as pd
 
 # ตั้งค่าหน้าตาเว็บไซต์
 st.set_page_config(
@@ -50,6 +51,110 @@ def save_persistent_session(user_id, access_token, refresh_token):
     
     except Exception as e:
         st.error(f"บันทึก session ไม่สำเร็จ: {e}")
+def compact_old_records(uid):
+    """รวมยอดรายวันที่เก่ากว่า 30 วันเข้ารายเดือน แล้วลบแถวรายวันทิ้ง"""
+    today = datetime.now(timezone(timedelta(hours=7))).date()
+    cutoff = today - timedelta(days=30)
+
+    old = (
+        supabase.table("daily_records")
+        .select("record_date, income, expense")
+        .eq("user_id", uid)
+        .lt("record_date", cutoff.isoformat())
+        .execute()
+    )
+
+    if not old.data:
+        return
+
+    # รวมยอดแยกตามเดือน
+    totals = {}
+    for row in old.data:
+        month_key = row["record_date"][:7] + "-01"   # เช่น 2026-09-01
+        t = totals.setdefault(month_key, {"income": 0.0, "expense": 0.0})
+        t["income"] += float(row["income"])
+        t["expense"] += float(row["expense"])
+
+    # บวกทบเข้ารายเดือน (ถ้าเดือนนั้นมีอยู่แล้ว)
+    for month_key, t in totals.items():
+        existing = (
+            supabase.table("monthly_records")
+            .select("income, expense")
+            .eq("user_id", uid)
+            .eq("month", month_key)
+            .execute()
+        )
+        old_inc = float(existing.data[0]["income"]) if existing.data else 0.0
+        old_exp = float(existing.data[0]["expense"]) if existing.data else 0.0
+
+        supabase.table("monthly_records").upsert({
+            "user_id": uid,
+            "month": month_key,
+            "income": old_inc + t["income"],
+            "expense": old_exp + t["expense"]
+        }).execute()
+
+    # ลบแถวรายวันที่รวมแล้ว (ลบหลังรวมสำเร็จเท่านั้น)
+    supabase.table("daily_records") \
+        .delete() \
+        .eq("user_id", uid) \
+        .lt("record_date", cutoff.isoformat()) \
+        .execute()
+
+def load_daily_range(uid, days):
+    """ดึงรายรับ-รายจ่ายรายวันย้อนหลัง days วัน (วันที่ไม่มีข้อมูลเป็น 0)"""
+    today = datetime.now(timezone(timedelta(hours=7))).date()
+    start = today - timedelta(days=days - 1)
+
+    res = (
+        supabase.table("daily_records")
+        .select("record_date, income, expense")
+        .eq("user_id", uid)
+        .gte("record_date", start.isoformat())
+        .lte("record_date", today.isoformat())
+        .execute()
+    )
+    data = {r["record_date"]: r for r in res.data}
+
+    rows = []
+    for i in range(days):
+        d = start + timedelta(days=i)
+        r = data.get(d.isoformat())
+        rows.append({
+            "วันที่": pd.Timestamp(d),
+            "รายรับ": float(r["income"]) if r else 0.0,
+            "รายจ่าย": float(r["expense"]) if r else 0.0,
+        })
+    return pd.DataFrame(rows).set_index("วันที่")
+
+
+def load_monthly(uid):
+    """ดึงสรุปรายเดือน (ข้อมูลที่เก่ากว่า 30 วัน)"""
+    res = (
+        supabase.table("monthly_records")
+        .select("month, income, expense")
+        .eq("user_id", uid)
+        .order("month")
+        .execute()
+    )
+    rows = [{
+        "เดือน": pd.Timestamp(r["month"]),
+        "รายรับ": float(r["income"]),
+        "รายจ่าย": float(r["expense"]),
+    } for r in res.data]
+    if not rows:
+        return pd.DataFrame(columns=["รายรับ", "รายจ่าย"])
+    return pd.DataFrame(rows).set_index("เดือน")
+
+
+def show_bar_chart(df):
+    # stack=False ทำให้แท่งรายรับ/รายจ่ายอยู่เทียบกันข้างๆ
+    # (Streamlit เวอร์ชันเก่าไม่รู้จักตัวเลือกนี้ จึงมี fallback)
+    try:
+        st.bar_chart(df, color=["#2ECC71", "#E74C3C"], stack=False)
+    except TypeError:
+        st.bar_chart(df, color=["#2ECC71", "#E74C3C"])
+
 # หัวเว็บไซต์
 st.title("⚔️ Goal Quest ⚔️")
 st.caption("Your Future Depends on What You Do Today (beta)")
@@ -264,6 +369,13 @@ if "player_data_loaded" not in st.session_state:
         )
         st.session_state.item_name = player_data["item"]
         st.session_state.player_data_loaded = True
+        st.session_state.player_data_loaded = True
+
+        # รวมยอดเก่าเข้ารายเดือน (ทำครั้งเดียวตอนเปิดแอป)
+        try:
+            compact_old_records(user_id)
+        except Exception as e:
+            st.warning(f"รวมยอดข้อมูลเก่าไม่สำเร็จ: {e}")
 
     except Exception as e:
         st.error(f"โหลดข้อมูลไม่สำเร็จ: {e}")
@@ -388,6 +500,52 @@ if menu == "🎯สรุปผล":
             ]
             message = random.choice(messages)
             st.info(message)
+
+    st.write("---")
+    st.subheader("📊 รายรับ-รายจ่าย")
+
+    period = st.radio(
+        "ช่วงเวลา",
+        ["7 วัน", "30 วัน", "รายเดือน"],
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+
+    try:
+        uid = st.session_state["user_id"]
+
+        if period == "รายเดือน":
+            df = load_monthly(uid)
+            if df.empty:
+                st.info(
+                    "ยังไม่มีสรุปรายเดือน "
+                    "ข้อมูลจะถูกรวมเป็นรายเดือนเมื่อเก่ากว่า 30 วัน"
+                )
+            else:
+                show_bar_chart(df)
+                table = df.copy()
+                table.index = table.index.strftime("%m/%Y")
+                table["คงเหลือ"] = table["รายรับ"] - table["รายจ่าย"]
+                st.dataframe(table, use_container_width=True)
+        else:
+            days = 7 if period == "7 วัน" else 30
+            df = load_daily_range(uid, days)
+
+            total_in = df["รายรับ"].sum()
+            total_out = df["รายจ่าย"].sum()
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric("รายรับรวม", f"{total_in:,.2f}")
+            c2.metric("รายจ่ายรวม", f"{total_out:,.2f}")
+            c3.metric("สุทธิ", f"{total_in - total_out:,.2f}")
+
+            if total_in == 0 and total_out == 0:
+                st.info(f"ใน {days} วันที่ผ่านมายังไม่มีการบันทึก")
+            else:
+                show_bar_chart(df)
+
+    except Exception as e:
+        st.error(f"โหลดกราฟไม่สำเร็จ: {e}")
 
 
 # ------------------------------------------
