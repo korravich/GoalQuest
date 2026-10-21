@@ -348,27 +348,23 @@ elif menu == "💰 Money Line":
 
         confirm_col, cancel_col = st.columns(2)
 
+
         with confirm_col:
-            
-        if st.button(
-            "ยืนยันล้างเงินเก็บ",
-            key="btn_confirm_reset_balance"
-        ):
-            try:
-                supabase.table("player_data").update({
-                    "balance": 0
-                }).eq(
-                    "user_id", st.session_state["user_id"]
-                ).execute()
+            if st.button("ยืนยันล้างเงินเก็บ", key="btn_confirm_reset_balance"):
+                try:
+                    supabase.table("player_data").update({
+                        "balance": 0
+                    }).eq(
+                        "user_id", st.session_state["user_id"]
+                    ).execute()
 
-                st.session_state.balance = 0.0
-                st.session_state["show_reset_balance_confirm"] = False
+                    st.session_state.balance = 0.0
+                    st.session_state["show_reset_balance_confirm"] = False
+                    st.success("ล้างเงินเก็บเรียบร้อยแล้ว!")
+                    st.rerun()
 
-                st.success("ล้างเงินเก็บเรียบร้อยแล้ว!")
-                st.rerun()
-
-            except Exception as e:
-                st.error(f"ล้างเงินเก็บไม่สำเร็จ: {e}")
+                except Exception as e:
+                    st.error(f"ล้างเงินเก็บไม่สำเร็จ: {e}")
 
         with cancel_col:
             if st.button("ยกเลิก", key="btn_cancel_reset_balance"):
