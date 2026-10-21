@@ -309,13 +309,29 @@ elif menu == "💰 Money Line":
     income = st.number_input("วันนี้ได้เงินกี่บาท💰:", min_value=0.0, value=0.0)
     expense = st.number_input("วันนี้ใช้จ่ายกี่บาท💸:", min_value=0.0, value=0.0)
     
+    
     if st.button("คำนวณและบันทึกยอดเงินวันนี้"):
-        # ตรรกะบวกสมุดบัญชีเดิมของคุณ
-        st.session_state.balance = st.session_state.balance + income - expense
-        with open("money.txt", "w", encoding="utf-8") as file:
-            file.write(str(st.session_state.balance))
-            
-        st.success("อัปเดตกระเป๋าเงินออนไลน์เรียบร้อยแล้ว! ลองกลับไปดูหน้าแรกเพื่อเช็คสถานะเป้าหมาย")
+        try:
+            new_balance = (
+                st.session_state.balance + income - expense
+            )
+
+            supabase.table("player_data").update({
+                "balance": new_balance
+            }).eq(
+                "user_id", st.session_state["user_id"]
+            ).execute()
+
+            st.session_state.balance = new_balance
+
+            st.success(
+                "อัปเดตกระเป๋าเงินเรียบร้อยแล้ว! "
+                "ลองกลับไปดูหน้าแรกเพื่อเช็กยอดเงิน"
+            )
+
+        except Exception as e:
+            st.error(f"บันทึกยอดเงินไม่สำเร็จ: {e}")
+
 
 # ------------------------------------------
 # MENU: Health Line
