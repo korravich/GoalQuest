@@ -13,7 +13,7 @@ import pandas as pd
 st.set_page_config(
     page_title="Goal Quest",
     page_icon="⚔️",
-    layout="centered"
+    layout="wide"
 )
 
 # ระบบเชื่อมต่อ Supabase
@@ -148,12 +148,13 @@ def load_monthly(uid):
 
 
 def show_bar_chart(df):
-    # stack=False ทำให้แท่งรายรับ/รายจ่ายอยู่เทียบกันข้างๆ
-    # (Streamlit เวอร์ชันเก่าไม่รู้จักตัวเลือกนี้ จึงมี fallback)
-    try:
-        st.bar_chart(df, color=["#2ECC71", "#E74C3C"], stack=False)
-    except TypeError:
-        st.bar_chart(df, color=["#2ECC71", "#E74C3C"])
+    left, right = st.columns(2)
+    with left:
+        st.markdown("**💰 รายรับ**")
+        st.bar_chart(df[["รายรับ"]], color="#2ECC71", height=300)
+    with right:
+        st.markdown("**💸 รายจ่าย**")
+        st.bar_chart(df[["รายจ่าย"]], color="#E74C3C", height=300)
 
 # หัวเว็บไซต์
 st.title("⚔️ Goal Quest ⚔️")
