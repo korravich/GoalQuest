@@ -42,7 +42,7 @@ if (
 
 # ถ้ายังไม่ได้เข้าสู่ระบบ ให้แสดงหน้าสมัครและล็อกอิน
 if "user_id" not in st.session_state:
-    st.subheader("⚔️ เข้าสู่โลก Goal Quest")
+    st.subheader("Start your goals")
 
     login_tab, signup_tab = st.tabs(
         ["เข้าสู่ระบบ", "สมัครสมาชิก"]
@@ -135,11 +135,9 @@ if "user_id" not in st.session_state:
                             "ก่อนเข้าสู่ระบบ"
                         )
 
-                except Exception:
-                    st.error(
-                        "สมัครสมาชิกไม่สำเร็จ "
-                        "โปรดตรวจสอบอีเมลและการตั้งค่า Supabase"
-                    )
+                except Exception as e:
+                    st.error(f"สมัครสมาชิกไม่สำเร็จ: {e}")
+
 
     # ยังไม่เข้าสู่ระบบ ห้ามแสดงส่วนเกมด้านล่าง
     st.stop()
