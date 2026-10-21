@@ -9,12 +9,14 @@ from streamlit_cookies_controller import CookieController
 import time
 import pandas as pd
 import altair as alt
+import streamlit.components.v1 as components
 
 # ตั้งค่าหน้าตาเว็บไซต์
 st.set_page_config(
     page_title="Goal Quest",
     page_icon="⚔️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 # ระบบเชื่อมต่อ Supabase
@@ -535,6 +537,64 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(3) p::
 section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(3) label p::after {
     content: "ติดตามการดูแลตัวเอง";
 }
+
+/* ===== Sidebar เลื่อนเข้า-ออก ===== */
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stExpandSidebarButton"] { display: none !important; }
+
+section[data-testid="stSidebar"] {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important;
+    height: 100dvh !important;
+    width: min(380px, 88vw) !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    transform: translateX(calc(-100% + 20px)) !important;
+    transition: transform .45s cubic-bezier(.22,.8,.3,1),
+                width .45s cubic-bezier(.22,.8,.3,1) !important;
+    z-index: 999991 !important;
+    box-shadow: 4px 0 24px rgba(20,33,61,.18);
+}
+
+/* ขีดสีฟ้าบอกว่าดึงออกมาได้ */
+section[data-testid="stSidebar"]::after {
+    content: ""; position: absolute; top: 50%; right: 7px;
+    width: 5px; height: 64px; margin-top: -32px;
+    border-radius: 3px; background: #4b91e6; opacity: .8;
+    pointer-events: none;
+}
+
+/* สถานะต่างๆ (ลำดับสำคัญ ห้ามสลับ) */
+section[data-testid="stSidebar"].gq-open { transform: translateX(0) !important; }
+@media (hover: hover) {
+    section[data-testid="stSidebar"]:hover { transform: translateX(0) !important; }
+}
+section[data-testid="stSidebar"].gq-full {
+    width: 100vw !important;
+    transform: translateX(0) !important;
+}
+section[data-testid="stSidebar"].gq-full::after { opacity: 0; }
+section[data-testid="stSidebar"].gq-shut {
+    transform: translateX(calc(-100% + 20px)) !important;
+}
+
+/* การ์ดเมนูยาวขึ้น + QUEST ใหญ่ขึ้น */
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    min-height: clamp(76px, 15vh, 170px) !important;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] label::before {
+    width: 54px !important; height: 54px !important;
+    background-size: 30px !important;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] label p {
+    font-size: 19px !important;
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] label p::after {
+    font-size: 14px !important;
+}
+.gq-title { font-size: 72px !important; }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -561,6 +621,99 @@ menu = st.sidebar.radio(
     ["🎯สรุปผล", "💰 Money Line", "💪 Health Line"],
     label_visibility="collapsed"
 )
+components.html("""
+<script>
+function main() {
+  const SB = 'section[data-testid="stSidebar"]';
+  const sb = () => document.querySelector(SB);
+  let busy = false;
+  let lockUntil = 0;
+
+  const open = () => {
+    const s = sb();
+    if (!s || Date.now() < lockUntil) return;
+    s.classList.remove('gq-shut');
+    s.classList.add('gq-open');
+  };
+  const close = () => {
+    const s = sb();
+    if (!s || busy) return;
+    s.classList.remove('gq-open');
+  };
+
+  // เมาส์: ชี้แล้วเปิด ออกแล้วปิด
+  document.addEventListener('pointerover', (e) => {
+    if (e.pointerType === 'mouse' && e.target.closest && e.target.closest(SB)) open();
+  });
+  document.addEventListener('pointerout', (e) => {
+    if (e.pointerType !== 'mouse' || busy) return;
+    const from = e.target.closest && e.target.closest(SB);
+    const to = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(SB);
+    if (from && !to) close();
+  });
+
+  // นิ้ว: แตะที่ขอบเพื่อเปิด แตะข้างนอกเพื่อปิด
+  document.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' || busy) return;
+    if (e.target.closest && e.target.closest(SB)) open(); else close();
+  }, true);
+
+  // เช็กว่า Streamlit กำลังโหลดหน้าใหม่อยู่ไหม
+  const isRunning = () => !!document.querySelector(
+    '.stApp[data-test-script-state="running"], [data-testid="stStatusWidget"], [data-stale="true"]'
+  );
+
+  function finish() {
+    const s = sb();
+    lockUntil = Date.now() + 700;   // กันเมาส์ที่ยังขยับอยู่ดึงกลับมาเปิดอีก
+    if (s) {
+      s.classList.remove('gq-open');
+      s.classList.add('gq-shut');
+      setTimeout(() => {
+        if (s.classList.contains('gq-shut')) s.classList.remove('gq-full');
+      }, 650);
+    }
+    busy = false;
+  }
+
+  function startSwitch() {
+    if (busy) return;
+    const s = sb();
+    if (!s) return;
+    busy = true;
+    s.classList.remove('gq-shut');
+    s.classList.add('gq-open', 'gq-full');   // ขยายเต็มจอบังหน้าเว็บ
+
+    const t0 = Date.now();
+    let seen = false, idle = 0;
+    const iv = setInterval(() => {
+      const el = Date.now() - t0;
+      if (isRunning()) { seen = true; idle = 0; } else { idle++; }
+      // เสร็จเมื่อ: เคยโหลดและนิ่งแล้ว (อย่างน้อย 0.9 วิ) / ไม่เห็นการโหลดเลยเกิน 1.8 วิ / เกิน 8 วิ
+      if ((seen && idle >= 3 && el > 900) || (!seen && el > 1800) || el > 8000) {
+        clearInterval(iv);
+        finish();
+      }
+    }, 120);
+  }
+
+  // กดการ์ดเมนูตัวใดตัวหนึ่ง
+  document.addEventListener('click', (e) => {
+    const lab = e.target.closest && e.target.closest(SB + ' div[role="radiogroup"] label');
+    if (lab) startSwitch();
+  }, true);
+}
+
+// ฝังสคริปต์ลงในหน้าหลักโดยตรง เพื่อให้ทำงานต่อเนื่องแม้แอปรันใหม่
+const doc = window.parent.document;
+if (!doc.getElementById('gq-sidebar-script')) {
+  const s = doc.createElement('script');
+  s.id = 'gq-sidebar-script';
+  s.textContent = '(' + main.toString() + ')();';
+  doc.head.appendChild(s);
+}
+</script>
+""", height=0)
 
 # ------------------------------------------
 # MENU: หน้าแรก & สรุปผล
