@@ -560,7 +560,7 @@ if menu == "🎯สรุปผล":
                     "ข้อมูลจะถูกรวมเป็นรายเดือนเมื่อเก่ากว่า 30 วัน"
                 )
             else:
-                show_bar_chart(df)
+                show_bar_chart(df, monthly=True)
                 table = df.copy()
                 table.index = table.index.strftime("%m/%Y")
                 table["คงเหลือ"] = table["รายรับ"] - table["รายจ่าย"]
@@ -579,13 +579,11 @@ if menu == "🎯สรุปผล":
 
             if total_in == 0 and total_out == 0:
                 st.info(f"ใน {days} วันที่ผ่านมายังไม่มีการบันทึก")
-                else:
-            show_bar_chart(df, monthly=True)
-            table = df.copy()
+            else:
+                show_bar_chart(df)
 
     except Exception as e:
         st.error(f"โหลดกราฟไม่สำเร็จ: {e}")
-
 
 # ------------------------------------------
 # MENU: Money Line
