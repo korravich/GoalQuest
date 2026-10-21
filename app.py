@@ -82,20 +82,27 @@ if "user_id" not in st.session_state and cookie_token:
         saved = response.data
 
         if saved:
-            supabase.auth.set_session(
-                saved["access_token"],
+            # ใช้ refresh token ขอ token ชุดใหม่ (ไม่ใช้ access token เก่า)
+            refreshed = supabase.auth.refresh_session(
                 saved["refresh_token"]
             )
-            st.session_state["user_id"] = saved["user_id"]
-            st.session_state["access_token"] = saved["access_token"]
-            st.session_state["refresh_token"] = saved["refresh_token"]
 
-            user_result = supabase.auth.get_user()
-            if user_result.user:
-                st.session_state["user_email"] = user_result.user.email or ""
+            if refreshed.session and refreshed.user:
+                new_access = refreshed.session.access_token
+                new_refresh = refreshed.session.refresh_token
+
+                # เก็บค่าใหม่ทับลงตาราง
+                session_supabase.table("user_sessions").update({
+                    "access_token": new_access,
+                    "refresh_token": new_refresh
+                }).eq("token_hash", token_hash).execute()
+
+                st.session_state["user_id"] = refreshed.user.id
+                st.session_state["user_email"] = refreshed.user.email or ""
+                st.session_state["access_token"] = new_access
+                st.session_state["refresh_token"] = new_refresh
     except Exception:
         pass
-
 if (
     "user_id" in st.session_state
     and "access_token" in st.session_state
@@ -108,6 +115,7 @@ if (
         )
     except Exception:
         pass
+
 # ถ้ายังไม่ได้เข้าสู่ระบบ ให้แสดงหน้าสมัครและล็อกอิน
 if "user_id" not in st.session_state:
     st.subheader("Start your goals")
