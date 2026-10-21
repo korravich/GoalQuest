@@ -229,26 +229,79 @@ elif menu == "💪 Health Line":
 
 
     # 2. ภารกิจรับประทานอาหาร
-    with st.expander("🍚 ภารกิจที่ 2: วันนี้กินอาหารครบหรือยัง?"):
+    with st.expander("🍚 ภารกิจที่ 2: วันนี้กินอาหารครบ 3 มื้อหรือยัง?"):
         st.write("เติมพลังงานให้ร่างกายด้วยมื้ออาหารที่หลากหลาย")
 
         breakfast = st.checkbox("🌅 มื้อเช้า", key="meal_breakfast")
-        lunch = st.checkbox("☀️ มื้อกลางวัน", key="meal_lunch")
-        dinner = st.checkbox("🌙 มื้อเย็น", key="meal_dinner")
+        lunch = st.checkbox("🌄 มื้อกลางวัน", key="meal_lunch")
+        dinner = st.checkbox("🌆 มื้อเย็น", key="meal_dinner")
 
-        meal_count = sum([breakfast, lunch, dinner])
+        meal_done = [breakfast, lunch, dinner]
+        meal_count = sum(meal_done)
+             
+        # เลือกข้อความตามจำนวนมื้อ
+        if meal_count == 0:
+            meal_message = "วันนี้คุณยังไม่ได้กินอะไรเลยนะ 🫩"
 
-        show_health_status(
-            "meal_tip",
-            meal_count,
-            3,
-            [
-                "ร่างกายไม่ใช่เครื่องเกมที่ใช้พลังงานฟรีนะ 😂",
-                "อย่าปล่อยให้ความหิวเป็นบอสใหญ่ประจำวัน 🍚",
-                "อาหารที่หลากหลายช่วยให้ร่างกายได้รับสารอาหารที่จำเป็นนะ!",
-                "ยุ่งแค่ไหนก็หาเวลาดูแลท้องตัวเองด้วยนะ 🍱"
-            ],
-            "บันทึกมื้ออาหารครบทั้ง 3 มื้อแล้ว! เก่งมาก 🍚"
+        elif meal_count == 1:
+            meal_message = "อาหารที่หลากหลายช่วยให้ร่างกายได้รับสารอาหารที่จำเป็นนะ! 💪"
+
+        elif meal_count == 2:
+            # สุ่มใหม่เมื่อจำนวนมื้อเปลี่ยน
+            previous_count = st.session_state.get(
+                "previous_meal_count", -1
+            )
+
+            if meal_count != previous_count:
+                st.session_state["meal_tip"] = random.choice([
+                    "อีกมื้อเดียวก็ครบแล้วนะ",
+                    "อย่าลืมกินอาหารให้ครบ 5 หมู่ด้วยหล่ะ 😌",
+                    "อย่าลืมหาเวลากินมื้อที่เหลือนะ 😉😉"
+                ])
+
+            meal_message = st.session_state.get(
+                "meal_tip",
+                "อย่าลืมกินอาหารให้ครบ 5 หมู่ด้วยหล่ะ 😌"
+            )
+
+        else:
+            meal_message = None
+
+
+                 # แสดงข้อความตามจำนวนมื้อท่ีกินและเปลี่ยนสี
+        if meal_count == 3:
+            st.success("บันทึกมื้ออาหารครบทั้ง 3 มื้อแล้ว! เก่งมาก 🍚")
+
+
+        elif meal_count == 0:
+            st.markdown(
+                "<p style='color:#E53935; font-size:12px;'>"
+                "💬 วันนี้คุณยังไม่ได้กินอะไรเลยนะ 🍚</p>",
+                unsafe_allow_html=True
+            )
+
+        elif meal_count == 2:
+            st.markdown(
+                f"<p style='color:#F39C12; font-size:12px;'>"
+                f"💬 {meal_message}</p>",
+                unsafe_allow_html=True
+            )
+
+
+        else:
+            st.markdown(
+                f"<p style='color:#3498DB; font-size:12px;'>"
+                f"💬 {meal_message}</p>",
+                unsafe_allow_html=True
+            )
+
+
+        st.session_state["previous_meal_count"] = meal_count
+
+        st.caption(f"ความคืบหน้า: {meal_count}/3 มื้อ")
+        st.progress(meal_count / 3)
+
+
         )
 
     # 3. ภารกิจกินอาหารให้สม่ำเสมอ
