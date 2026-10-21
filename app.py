@@ -148,19 +148,7 @@ st.caption(
     + str(st.session_state.get("user_email", "ผู้เล่น"))
 )
 
-if st.button("ออกจากระบบ"):
-    try:
-        supabase.auth.sign_out()
-    except Exception:
-        pass
-
-    for key in ["access_token", "refresh_token", "user_id", "user_email"]:
-        st.session_state.pop(key, None)
-
-    st.rerun()
-
 st.write("---")
-
 
 
 # ==========================================
@@ -217,109 +205,54 @@ if "player_data_loaded" not in st.session_state:
 
 st.sidebar.markdown("""
 <style>
-/* ===== ธีมหลักของ GoalQuest ===== */
-.stApp {
-    background-color: #0B1220 !important;
-    color: #EAF2FF !important;
-}
-
-[data-testid="stHeader"] {
-    background-color: #0B1220 !important;
-}
-
-section[data-testid="stSidebar"] {
-    background-color: #0B1220 !important;
-    border-right: 1px solid rgba(117, 184, 255, 0.16);
-}
-
-/* พื้นหลังภายใน Sidebar */
-section[data-testid="stSidebar"] > div {
-    background-color: #0B1220 !important;
-}
-
-/* ===== หัวข้อ QUEST ===== */
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2 {
-    color: #EAF2FF !important;
-    font-weight: 800 !important;
-    letter-spacing: 2px !important;
+    color: #eaf2ff;
+    font-weight: 800;
+    letter-spacing: 2px;
 }
 
-/* ===== ระยะห่างเมนู ===== */
 section[data-testid="stSidebar"] div[role="radiogroup"] {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 10px !important;
+    gap: 10px;
 }
 
-/* ===== กล่องเมนู ===== */
 section[data-testid="stSidebar"] div[role="radiogroup"] label {
     display: flex !important;
     align-items: center !important;
-    box-sizing: border-box !important;
-    width: 100% !important;
-    min-height: 54px !important;
-    padding: 14px 16px !important;
-    gap: 0 !important;
-
-    background-color: #162238 !important;
+    background-color: rgba(255, 255, 255, 0.06) !important;
     border: 1px solid rgba(160, 190, 230, 0.18) !important;
     border-radius: 14px !important;
-
+    padding: 14px 16px !important;
+    min-height: 54px !important;
+    gap: 0 !important;
     transition: background-color 0.2s ease,
                 border-color 0.2s ease;
 }
 
-/* เอฟเฟกต์เมื่อชี้เมาส์ */
 section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {
-    background-color: #203653 !important;
-    border-color: #75B8FF !important;
+    background-color: rgba(75, 145, 230, 0.20) !important;
+    border-color: #75baff !important;
 }
 
-/* ข้อความเมนู */
+section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child,
+section[data-testid="stSidebar"] div[role="radiogroup"] input[type="radio"],
+section[data-testid="stSidebar"] div[role="radiogroup"] label svg {
+    display: none !important;
+}
+
 section[data-testid="stSidebar"] div[role="radiogroup"] label p {
-    color: #EAF2FF !important;
     font-size: 16px !important;
     font-weight: 600 !important;
     margin: 0 !important;
 }
-
-/* ซ่อนตัวเลือกวงกลมของ Radio */
-section[data-testid="stSidebar"] div[role="radiogroup"] label [data-baseweb="radio"] {
-    display: none !important;
-}
-
-section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
-    display: none !important;
-}
-
-/* ปรับสีข้อความทั่วไปใน Sidebar */
-section[data-testid="stSidebar"] p,
-section[data-testid="stSidebar"] label {
-    color: #EAF2FF;
-}
-
-/* รองรับหน้าจอมือถือ */
-@media (max-width: 768px) {
-    section[data-testid="stSidebar"] {
-        background-color: #0B1220 !important;
-    }
-
-    section[data-testid="stSidebar"] div[role="radiogroup"] label {
-        min-height: 50px !important;
-        padding: 12px 14px !important;
-    }
-}
 </style>
 """, unsafe_allow_html=True)
 
-# หัวข้อ QUEST
 st.sidebar.markdown(
     "<h1 style='font-size:34px; margin:4px 0 20px 0;'>QUEST</h1>",
     unsafe_allow_html=True
 )
 
-# เมนูหลัก — คงตัวเลือกเดิมเพื่อรักษาการทำงาน
 menu = st.sidebar.radio(
     "เลือกหน้า",
     ["🎯สรุปผล", "💰 Money Line", "💪 Health Line"],
@@ -449,7 +382,7 @@ elif menu == "💰 Money Line":
     st.subheader("🧹 จัดการเงินเก็บ")
 
     if st.button("ล้างเงินเก็บ", key="reset_balance"):
-        st.session_state["confirm_reset_balance"] = True
+        st.session_state["show_reset_balance_confirm"] = True
 
     if st.session_state.get("confirm_reset_balance", False):
         st.warning(
@@ -810,16 +743,73 @@ elif menu == "💪 Health Line":
     if st.button("บันทึกคะแนนสุขภาพประจำวัน"):
         st.success("บันทึกพฤติกรรมเรียบร้อย! รักษาวินัยแบบนี้ในทุกๆ วันนะครับ")
 
-# ------------------------------------------
-# 🧹 ปุ่มล้างข้อมูลทั้งหมด (เมนูด้านซ้ายล่าง)
-# ------------------------------------------ผท
+# ==========================================
+# 🧹 เมนูจัดการบัญชีและรีเซ็ตข้อมูล
+# ==========================================
+
 st.sidebar.write("---")
-if st.sidebar.button("🧹 รีเซ็ตข้อมูลทั้งหมด"):
-    for f in ["money.txt", "goal.txt", "item.txt"]:
-        if os.path.exists(f):
-            os.remove(f)
-    st.session_state.balance = 0.0
-    st.session_state.goal = 0.0
-    st.session_state.item_name = "สิ่งที่อยากได้"
-    st.sidebar.warning("ล้างข้อมูลเรียบร้อยแล้ว!")
+
+# ปุ่มรีเซ็ตข้อมูลทั้งหมด
+if st.sidebar.button(
+    "🧹 รีเซ็ตข้อมูลทั้งหมด",
+    use_container_width=True
+):
+    st.session_state["confirm_reset_all"] = True
+
+if st.session_state.get("confirm_reset_all", False):
+    st.sidebar.warning(
+        "ต้องการรีเซ็ตข้อมูลในบัญชีนี้หรือไม่?"
+    )
+
+    confirm_col, cancel_col = st.sidebar.columns(2)
+
+    with confirm_col:
+        if st.button("ยืนยันรีเซ็ต", key="confirm_all_reset"):
+            try:
+                supabase.table("player_data").update({
+                    "balance": 0,
+                    "goal": "0",
+                    "item": "สิ่งที่อยากได้"
+                }).eq(
+                    "user_id", st.session_state["user_id"]
+                ).execute()
+
+                st.session_state.balance = 0.0
+                st.session_state.goal = 0.0
+                st.session_state.item_name = "สิ่งที่อยากได้"
+                st.session_state["confirm_reset_all"] = False
+
+                st.sidebar.success("รีเซ็ตข้อมูลสำเร็จ")
+                st.rerun()
+
+            except Exception as e:
+                st.sidebar.error(f"รีเซ็ตไม่สำเร็จ: {e}")
+
+    with cancel_col:
+        if st.button("ยกเลิก", key="cancel_all_reset"):
+            st.session_state["confirm_reset_all"] = False
+            st.rerun()
+
+# ปุ่มออกจากระบบ อยู่ใกล้กับปุ่มรีเซ็ต
+if st.sidebar.button(
+    "🚪 ออกจากระบบ",
+    use_container_width=True
+):
+    try:
+        supabase.auth.sign_out()
+    except Exception:
+        pass
+
+    for key in [
+        "access_token",
+        "refresh_token",
+        "user_id",
+        "user_email",
+        "player_data_loaded",
+        "balance",
+        "goal",
+        "item_name",
+    ]:
+        st.session_state.pop(key, None)
+
     st.rerun()
