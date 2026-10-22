@@ -661,7 +661,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p::after {
     }
 }
 
-.gq-title { font-size: 60px !important; font-weight: 300 !important; }
+.gq-title { font-size: 20px !important; font-weight: 300 !important; }
 
 </style>
 """, unsafe_allow_html=True)
