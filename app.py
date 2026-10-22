@@ -10,6 +10,7 @@ import time
 import pandas as pd
 import altair as alt
 import streamlit.components.v1 as components
+import html
 
 # ตั้งค่าหน้าตาเว็บไซต์
 st.set_page_config(
@@ -205,10 +206,6 @@ def show_bar_chart(df, monthly=False):
     )
     st.altair_chart(chart, use_container_width=False)
 
-# หัวเว็บไซต์
-st.title("⚔️ Goal Quest ⚔️")
-st.caption("Your Future Depends on What You Do Today (beta)")
-st.write("---")
 
 
 # ==========================================
@@ -273,6 +270,8 @@ if (
 
 # ถ้ายังไม่ได้เข้าสู่ระบบ ให้แสดงหน้าสมัครและล็อกอิน
 if "user_id" not in st.session_state:
+    st.title("⚔️ Goal Quest ⚔️")
+    st.caption("Your Future Depends on What You Do Today (beta)")
     st.subheader("Start your goals")
 
     login_tab, signup_tab = st.tabs(
@@ -369,13 +368,6 @@ if "user_id" not in st.session_state:
     # ยังไม่เข้าสู่ระบบ ห้ามแสดงส่วนเกมด้านล่าง
     st.stop()
 
-# แสดงบัญชีที่กำลังใช้งาน
-st.caption(
-    "บัญชีที่เข้าสู่ระบบ: "
-    + str(st.session_state.get("user_email", "ผู้เล่น"))
-)
-
-st.write("---")
 
 
 # ==========================================
@@ -454,7 +446,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p {
 .gq-row { display: flex; align-items: center; gap: 10px; }
 .gq-banner b { color: #fff !important; font-size: 20px; }
 .gq-banner span { color: #dbe6f7 !important; font-size: 13px; display: block; margin-top: 4px; }
-.gq-title { font-size: 56px; font-weight: 900; letter-spacing: 2px; line-height: 1.1; margin: 0 0 6px 0; }
+.gq-title { font-size: 56px; font-weight: 300; letter-spacing: 2px; line-height: 1.1; margin: 0 0 6px 0; }
 .gq-sub { font-size: 14px; color: #5b6b82 !important; margin-bottom: 10px; }
 
 section[data-testid="stSidebar"] div[role="radiogroup"] { gap: 10px; }
@@ -668,6 +660,8 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p::after {
         opacity: 0 !important;
     }
 }
+
+.gq-title { font-size: 60px !important; font-weight: 300 !important; }
 
 </style>
 """, unsafe_allow_html=True)
@@ -1351,6 +1345,15 @@ elif menu == "💪 Health Line":
 # ==========================================
 
 st.sidebar.write("---")
+
+# แสดงบัญชีที่กำลังใช้งาน
+_email = html.escape(str(st.session_state.get("user_email", "ผู้เล่น")))
+st.sidebar.markdown(
+    "<p style='font-size:13px; color:#5b6b82; margin:0 0 10px 0; "
+    "word-break:break-all;'>บัญชีที่เข้าสู่ระบบ:<br>"
+    f"<b style='color:#14213d;'>{_email}</b></p>",
+    unsafe_allow_html=True
+)
 
 # ปุ่มรีเซ็ตข้อมูลทั้งหมด
 if st.sidebar.button(
