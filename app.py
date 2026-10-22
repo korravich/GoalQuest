@@ -13,10 +13,12 @@ import streamlit.components.v1 as components
 import html
 from PIL import Image
 
+_icon_path = os.path.join(os.path.dirname(__file__), "korvian_icon.png")
 try:
-    _icon = Image.open(os.path.join(os.path.dirname(__file__), "korvian_icon.png"))
-except Exception:
+    _icon = Image.open(_icon_path)
+except Exception as _e:
     _icon = "🌀"
+    _icon_error = f"{_icon_path} -> {_e}"
 
 st.set_page_config(
     page_title="Korvian",
@@ -24,6 +26,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+if "_icon_error" in globals():
+    st.warning(f"โหลดไอคอนไม่ได้: {_icon_error}")
+
+
 
 # ระบบเชื่อมต่อ Supabase
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
@@ -350,17 +356,15 @@ if (
 # ถ้ายังไม่ได้เข้าสู่ระบบ ให้แสดงหน้าสมัครและล็อกอิน
 if "user_id" not in st.session_state:
     st.markdown(
-        "<div style='display:flex;align-items:center;gap:14px;margin-bottom:4px;'>"
-        "<div style='background:#06060a;border-radius:16px;padding:10px;display:flex;'>"
-        "<svg width='44' height='44' viewBox='0 0 28 28' fill='none' stroke='#b8bac2' "
-        "stroke-width='2.2' xmlns='http://www.w3.org/2000/svg'>"
-        "<circle cx='14' cy='14' r='11'/><circle cx='14' cy='14' r='6.5'/>"
-        "<circle cx='14' cy='14' r='2' fill='#b8bac2'/></svg></div>"
-        "<span style='font-size:44px;font-weight:800;letter-spacing:2px;'>Korvian</span>"
-        "</div>",
-        unsafe_allow_html=True
-    )    
-    st.caption("Your Future Depends on What You Do Today (beta)")
+            "<div style='display:flex;align-items:center;gap:14px;margin-bottom:4px;'>"
+            "<div style='background:#06060a;border-radius:16px;padding:10px;display:flex;'>"
+            + korvian_logo_svg(44) +
+            "</div>"
+            "<span style='font-size:44px;font-weight:800;letter-spacing:2px;'>Korvian</span>"
+            "</div>",
+            unsafe_allow_html=True
+        )
+        st.caption("Your Future Depends on What You Do Today (beta)")
     st.subheader("Start your goals")
 
     login_tab, signup_tab = st.tabs(
@@ -767,12 +771,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p::after {
 st.sidebar.markdown(
     "<div class='gq-banner'>"
     "<div class='gq-row'>"
-    "<svg width='28' height='28' viewBox='0 0 28 28' fill='none' "
-    "stroke='#b8bac2' stroke-width='2.2' xmlns='http://www.w3.org/2000/svg'>"
-    "<circle cx='14' cy='14' r='11'/>"
-    "<circle cx='14' cy='14' r='6.5'/>"
-    "<circle cx='14' cy='14' r='2' fill='#b8bac2'/>"
-    "</svg>"
+    + korvian_logo_svg(28) +
     "<b>Korvian</b>"
     "</div>"
     "<span>Your Future Depends on What You Do Today.</span>"
