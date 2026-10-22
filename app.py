@@ -579,34 +579,47 @@ section[data-testid="stSidebar"].gq-shut {
     transform: translateX(calc(-100% + 20px)) !important;
 }
 
-/* ===== การ์ดเมนูยืดตามความกว้างของ sidebar ===== */
-section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+/* ===== ทำให้แถบ Goal Quest กับการ์ดทั้ง 3 ยาวเท่ากัน ===== */
+
+/* ทุกชั้นที่ครอบ radio ให้ยืดเต็มความกว้าง */
 section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
-section[data-testid="stSidebar"] div[data-testid="stRadio"],
+section[data-testid="stSidebar"] [data-testid="stElementContainer"],
+section[data-testid="stSidebar"] [data-testid="stRadio"],
+section[data-testid="stSidebar"] [data-testid="stRadio"] > div,
 section[data-testid="stSidebar"] div[role="radiogroup"] {
     width: 100% !important;
     max-width: 100% !important;
 }
 
-/* ความสูงการ์ดกลับเป็นปกติ (ไม่ใหญ่ขึ้นแนวตั้ง) */
-section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    width: 100% !important;
-    min-height: 76px !important;
-    box-sizing: border-box !important;
-    transition: background-color .2s, border-color .2s, padding .45s ease;
+/* กลุ่มการ์ด: เรียงแนวตั้ง ให้ลูกยืดเต็มแนวนอน */
+section[data-testid="stSidebar"] div[role="radiogroup"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px;
 }
 
-/* ตอนขยายเต็มจอ: เว้นขอบสองข้างเล็กน้อย ให้การ์ดยาวเต็มหน้า */
+/* การ์ดและแถบ Goal Quest ใช้ขนาดกล่องแบบเดียวกัน */
+section[data-testid="stSidebar"] div[role="radiogroup"] label,
+.gq-banner {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+section[data-testid="stSidebar"] div[role="radiogroup"] label {
+    min-height: 76px !important;
+    padding: 12px 14px !important;
+}
+
+/* ตอนขยายเต็มจอ: เว้นขอบที่ตัวครอบ (ไม่ใช่ที่ตัวการ์ด) ทุกอันจึงเท่ากัน */
 section[data-testid="stSidebar"].gq-full [data-testid="stSidebarUserContent"] {
     padding-left: 5vw !important;
     padding-right: 5vw !important;
 }
-section[data-testid="stSidebar"].gq-full div[role="radiogroup"] label {
-    padding-left: 5vw !important;
-    padding-right: 5vw !important;
-}
 
-/* ขนาดไอคอนและตัวอักษร */
+/* ไอคอน ตัวอักษร */
 section[data-testid="stSidebar"] div[role="radiogroup"] label::before {
     width: 50px !important; height: 50px !important;
     background-size: 28px !important;
@@ -619,7 +632,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p::after {
 }
 
 /* QUEST ลดลงจาก 72px */
-.gq-title { font-size: 60px !important; }
+.gq-title { font-size: 40px !important; }
 
 </style>
 """, unsafe_allow_html=True)
