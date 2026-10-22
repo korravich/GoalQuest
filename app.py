@@ -188,7 +188,7 @@ def add_balance_monthly(uid, df, current_balance):
 
 
 def show_bar_chart(df, monthly=False, goal=0.0, goal_name=""):
-    """แท่งรายรับ/รายจ่าย (แกนซ้าย) + เส้นเงินเก็บและเส้นเป้าหมาย (แกนขวา)"""
+    """แท่งรายรับ/รายจ่าย + เส้นเงินเก็บ + เส้นเป้าหมาย ใช้แกนตัวเลขเดียวกัน"""
     data = df.reset_index()
     time_col = data.columns[0]
     data["label"] = data[time_col].dt.strftime("%m/%Y" if monthly else "%d/%m")
@@ -201,9 +201,20 @@ def show_bar_chart(df, monthly=False, goal=0.0, goal_name=""):
         value_name="จำนวนเงิน"
     )
 
-    # แกนซ้าย: เผื่อที่ว่างเหนือแท่งสูงสุด 20%
-    max_val = float(bars_data["จำนวนเงิน"].max())
-    y_max = max_val * 1.2 if max_val > 0 else 100
+    has_balance = "เงินเก็บ" in data.columns
+
+    # หาช่วงแกนเดียวที่ครอบคลุมทุกอย่าง เผื่อที่ว่างด้านบน 20%
+    tops = [float(bars_data["จำนวนเงิน"].max())]
+    lows = [0.0]
+    if has_balance:
+        tops.append(float(data["เงินเก็บ"].max()))
+        lows.append(float(data["เงินเก็บ"].min()))
+    if goal > 0:
+        tops.append(float(goal))
+    top, low = max(tops), min(lows)
+    span = top - low
+    y_max = top + span * 0.2 if span > 0 else 100
+    y_scale = alt.Scale(domain=[low, y_max])
 
     x_enc = alt.X(
         "label:N", sort=order, title=None,
@@ -216,11 +227,7 @@ def show_bar_chart(df, monthly=False, goal=0.0, goal_name=""):
         .encode(
             x=x_enc,
             xOffset=alt.XOffset("ประเภท:N", sort=["รายรับ", "รายจ่าย"]),
-            y=alt.Y(
-                "จำนวนเงิน:Q",
-                title="รายรับ / รายจ่าย (บาท)",
-                scale=alt.Scale(domain=[0, y_max])
-            ),
+            y=alt.Y("จำนวนเงิน:Q", title="บาท", scale=y_scale),
             color=alt.Color(
                 "ประเภท:N",
                 scale=alt.Scale(
@@ -233,67 +240,45 @@ def show_bar_chart(df, monthly=False, goal=0.0, goal_name=""):
         )
     )
 
-    if "เงินเก็บ" not in data.columns:
-        chart = bars.properties(height=380, width=520)
-        st.altair_chart(chart, use_container_width=False)
-        return
+    layers = [bars]
 
-    # แกนขวา: ครอบคลุมทั้งเงินเก็บและเป้าหมาย เผื่อที่ว่าง 20%
-    top = max(float(data["เงินเก็บ"].max()), float(goal))
-    low = min(0.0, float(data["เงินเก็บ"].min()))
-    span = top - low
-    r_max = top + span * 0.2 if span > 0 else 100
-    bal_scale = alt.Scale(domain=[low, r_max])
-
-    right_axis = alt.Axis(
-        orient="right", titleColor="#3498DB", labelColor="#3498DB"
-    )
-
-    line = (
-        alt.Chart(data)
-        .mark_line(
-            color="#3498DB", strokeWidth=3,
-            point=alt.OverlayMarkDef(color="#3498DB", size=60)
+    if has_balance:
+        line = (
+            alt.Chart(data)
+            .mark_line(
+                color="#3498DB", strokeWidth=3,
+                point=alt.OverlayMarkDef(color="#3498DB", size=60)
+            )
+            .encode(
+                x=x_enc,
+                y=alt.Y("เงินเก็บ:Q", title="บาท", scale=y_scale),
+                tooltip=[
+                    alt.Tooltip("label:N", title="ช่วง"),
+                    alt.Tooltip("เงินเก็บ:Q", title="เงินเก็บ", format=",.2f")
+                ]
+            )
         )
-        .encode(
-            x=x_enc,
-            y=alt.Y(
-                "เงินเก็บ:Q", title="เงินเก็บ (บาท)",
-                scale=bal_scale, axis=right_axis
-            ),
-            tooltip=[
-                alt.Tooltip("label:N", title="ช่วง"),
-                alt.Tooltip("เงินเก็บ:Q", title="เงินเก็บ", format=",.2f")
-            ]
-        )
-    )
+        layers.append(line)
 
-    right_layers = line
     if goal > 0:
         rule = (
             alt.Chart(pd.DataFrame({"เป้าหมาย": [float(goal)]}))
             .mark_rule(color="#F39C12", strokeWidth=1.5, strokeDash=[6, 4])
             .encode(
-                y=alt.Y(
-                    "เป้าหมาย:Q", title="เงินเก็บ (บาท)",
-                    scale=bal_scale, axis=right_axis
-                ),
+                y=alt.Y("เป้าหมาย:Q", title="บาท", scale=y_scale),
                 tooltip=[alt.Tooltip("เป้าหมาย:Q", format=",.2f")]
             )
         )
-        right_layers = alt.layer(line, rule)
+        layers.append(rule)
 
-    chart = (
-        alt.layer(bars, right_layers)
-        .resolve_scale(y="independent")
-        .properties(height=380, width=520)
-    )
+    chart = alt.layer(*layers).properties(height=380, width=520)
     st.altair_chart(chart, use_container_width=False)
 
-    text = "🔵 เส้นฟ้า = เงินเก็บ (อ่านที่แกนขวา) · แท่ง = รายรับ/รายจ่าย (แกนซ้าย)"
-    if goal > 0:
-        text += f" · 🟠 เส้นประ = เป้าหมาย {goal_name} {goal:,.2f} บาท"
-    st.caption(text)
+    if has_balance:
+        text = "🔵 เส้นฟ้า = เงินเก็บ"
+        if goal > 0:
+            text += f" · 🟠 เส้นประ = เป้าหมาย {goal_name} {goal:,.2f} บาท (เส้นฟ้าแตะเส้นนี้ = ถึงเป้าแล้ว)"
+        st.caption(text)
 
 
 
@@ -1081,22 +1066,25 @@ elif menu == "💰 Money Line":
 
     if st.session_state.get("show_reset_balance_confirm", False):
         st.warning(
-            "⚠️ คุณกำลังจะตั้งยอดเงินเก็บเป็น 0 บาท "
-            "การดำเนินการนี้ไม่สามารถย้อนกลับได้ "
+            "⚠️ คุณกำลังจะตั้งยอดเงินเก็บเป็น 0 บาท และล้างประวัติรายรับ-รายจ่าย "
+            "(รวมกราฟ) ทั้งหมด การดำเนินการนี้ไม่สามารถย้อนกลับได้ "
             "แต่ชื่อเป้าหมายและราคาเป้าหมายจะไม่ถูกลบ"
         )
 
         confirm_col, cancel_col = st.columns(2)
 
-
         with confirm_col:
             if st.button("ยืนยันล้างเงินเก็บ", key="btn_confirm_reset_balance"):
                 try:
+                    uid = st.session_state["user_id"]
+
+                    # ล้างประวัติก่อน เพื่อให้เส้นเงินเก็บเริ่มนับใหม่จาก 0
+                    supabase.table("daily_records").delete().eq("user_id", uid).execute()
+                    supabase.table("monthly_records").delete().eq("user_id", uid).execute()
+
                     supabase.table("player_data").update({
                         "balance": 0
-                    }).eq(
-                        "user_id", st.session_state["user_id"]
-                    ).execute()
+                    }).eq("user_id", uid).execute()
 
                     st.session_state.balance = 0.0
                     st.session_state["show_reset_balance_confirm"] = False
@@ -1112,7 +1100,7 @@ elif menu == "💰 Money Line":
                 st.rerun()
 
     st.caption(
-        "หมายเหตุ: ปุ่มนี้จะล้างเฉพาะยอดเงินเก็บของบัญชีที่เข้าสู่ระบบ "
+        "หมายเหตุ: ปุ่มนี้จะล้างยอดเงินเก็บและประวัติรายรับ-รายจ่ายของบัญชีที่เข้าสู่ระบบ "
         "ไม่ลบชื่อสิ่งของหรือราคาเป้าหมาย"
     )
 
