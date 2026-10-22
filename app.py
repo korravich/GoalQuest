@@ -360,7 +360,7 @@ if "user_id" not in st.session_state:
         "</div>",
         unsafe_allow_html=True
     )    
-        st.caption("Your Future Depends on What You Do Today (beta)")
+    st.caption("Your Future Depends on What You Do Today (beta)")
     st.subheader("Start your goals")
 
     login_tab, signup_tab = st.tabs(
