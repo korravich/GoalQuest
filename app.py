@@ -11,11 +11,16 @@ import pandas as pd
 import altair as alt
 import streamlit.components.v1 as components
 import html
+from PIL import Image
 
-# ตั้งค่าหน้าตาเว็บไซต์
+try:
+    _icon = Image.open(os.path.join(os.path.dirname(__file__), "korvian_icon.png"))
+except Exception:
+    _icon = "🌀"
+
 st.set_page_config(
-    page_title="Goal Quest",
-    page_icon="⚔️",
+    page_title="Korvian",
+    page_icon=_icon,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -277,7 +282,7 @@ def show_bar_chart(df, monthly=False, goal=0.0, goal_name=""):
     if has_balance:
         text = "🔵 เส้นฟ้า = เงินเก็บ"
         if goal > 0:
-            text += f" · 🟠 เส้นประ = เป้าหมาย {goal_name} {goal:,.2f} บาท (เส้นฟ้าแตะเส้นนี้ = ถึงเป้าแล้ว)"
+            text += f"   ·  🟠 เส้นประ = เป้าหมาย {goal_name} {goal:,.2f} บาท (เส้นฟ้าแตะเส้นนี้ = ถึงเป้าแล้ว)"
         st.caption(text)
 
 
@@ -344,8 +349,17 @@ if (
 
 # ถ้ายังไม่ได้เข้าสู่ระบบ ให้แสดงหน้าสมัครและล็อกอิน
 if "user_id" not in st.session_state:
-    st.title("⚔️ Goal Quest ⚔️")
-    st.caption("Your Future Depends on What You Do Today (beta)")
+    st.markdown(
+        "<div style='display:flex;align-items:center;gap:14px;margin-bottom:4px;'>"
+        "<div style='background:#06060a;border-radius:16px;padding:10px;display:flex;'>"
+        "<svg width='44' height='44' viewBox='0 0 28 28' fill='none' stroke='#b8bac2' "
+        "stroke-width='2.2' xmlns='http://www.w3.org/2000/svg'>"
+        "<circle cx='14' cy='14' r='11'/><circle cx='14' cy='14' r='6.5'/>"
+        "<circle cx='14' cy='14' r='2' fill='#b8bac2'/></svg></div>"
+        "<span style='font-size:44px;font-weight:800;letter-spacing:2px;'>Korvian</span>"
+        "</div>",
+        unsafe_allow_html=True
+    )    st.caption("Your Future Depends on What You Do Today (beta)")
     st.subheader("Start your goals")
 
     login_tab, signup_tab = st.tabs(
@@ -513,7 +527,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p {
 }
 
 .gq-banner {
-    background: #14213d; border-radius: 14px;
+    background: #06060a; border-radius: 14px;
     padding: 14px 16px; margin-bottom: 18px;
 }
 .gq-row { display: flex; align-items: center; gap: 10px; }
@@ -577,6 +591,12 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(3) label::
     background-color: #d3f4e2;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f9d6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20s-8-5-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 9c0 6-8 11-8 11z'/%3E%3C/svg%3E");
 }
+/* 4) การศึกษา - กล่องสีม่วง */
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(4)::before,
+section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(4) label::before {
+    background-color: #e6dcfb;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c4dcc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 6c-2-1.5-5-2-8-2v13c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2zM12 6v13'/%3E%3C/svg%3E");
+}
 
 /* ลูกศรด้านขวา */
 section[data-testid="stSidebar"] div[role="radiogroup"] label::after {
@@ -601,6 +621,10 @@ section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(2) label p
 section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(3) p::after,
 section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(3) label p::after {
     content: "ติดตามการดูแลตัวเอง";
+}
+section[data-testid="stSidebar"] div[role="radiogroup"] > label:nth-child(4) p::after,
+section[data-testid="stSidebar"] div[role="radiogroup"] > *:nth-child(4) label p::after {
+    content: "เร็วๆ นี้";
 }
 
 /* ===== Sidebar เลื่อนเข้า-ออก ===== */
@@ -743,12 +767,12 @@ st.sidebar.markdown(
     "<div class='gq-banner'>"
     "<div class='gq-row'>"
     "<svg width='28' height='28' viewBox='0 0 28 28' fill='none' "
-    "stroke='#6ea8ff' stroke-width='2.2' xmlns='http://www.w3.org/2000/svg'>"
+    "stroke='#b8bac2' stroke-width='2.2' xmlns='http://www.w3.org/2000/svg'>"
     "<circle cx='14' cy='14' r='11'/>"
     "<circle cx='14' cy='14' r='6.5'/>"
-    "<circle cx='14' cy='14' r='2' fill='#6ea8ff'/>"
+    "<circle cx='14' cy='14' r='2' fill='#b8bac2'/>"
     "</svg>"
-    "<b>Goal Quest</b>"
+    "<b>Korvian</b>"
     "</div>"
     "<span>Your Future Depends on What You Do Today.</span>"
     "</div>"
@@ -759,7 +783,7 @@ st.sidebar.markdown(
 
 menu = st.sidebar.radio(
     "เลือกหน้า",
-    ["🎯สรุปผล", "💰 Money Line", "💪 Health Line"],
+    ["🎯สรุปผล", "💰 Money Line", "💪 Health Line", "📚 Study Line"],
     label_visibility="collapsed"
 )
 components.html("""
@@ -1425,6 +1449,16 @@ elif menu == "💪 Health Line":
     
     if st.button("บันทึกคะแนนสุขภาพประจำวัน"):
         st.success("บันทึกพฤติกรรมเรียบร้อย! รักษาวินัยแบบนี้ในทุกๆ วันนะครับ")
+
+
+
+# ------------------------------------------
+# MENU: Studdy
+# ------------------------------------------
+
+elif menu == "📚 Study Line":
+    st.subheader("📚 Study Line")
+    st.info("หน้านี้กำลังพัฒนา เร็วๆ นี้")
 
 # ==========================================
 # 🧹 เมนูจัดการบัญชีและรีเซ็ตข้อมูล
