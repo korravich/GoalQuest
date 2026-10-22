@@ -359,7 +359,8 @@ if "user_id" not in st.session_state:
         "<span style='font-size:44px;font-weight:800;letter-spacing:2px;'>Korvian</span>"
         "</div>",
         unsafe_allow_html=True
-    )    st.caption("Your Future Depends on What You Do Today (beta)")
+    )    
+        st.caption("Your Future Depends on What You Do Today (beta)")
     st.subheader("Start your goals")
 
     login_tab, signup_tab = st.tabs(
