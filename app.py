@@ -151,45 +151,74 @@ def load_monthly(uid):
     return pd.DataFrame(rows).set_index("เดือน")
 
 
-def show_bar_chart(df, monthly=False):
-    """กราฟเดียว แท่งรายรับ (เขียว) กับรายจ่าย (แดง) อยู่ข้างกัน"""
+def add_balance_daily(df, current_balance):
+    """เติมคอลัมน์ 'เงินเก็บ' (ยอด ณ สิ้นวัน) โดยคำนวณย้อนจากยอดปัจจุบัน"""
+    out = df.copy()
+    net = out["รายรับ"] - out["รายจ่าย"]
+    after = net[::-1].cumsum()[::-1] - net      # ผลรวมสุทธิของวันหลังจากวันนั้น
+    out["เงินเก็บ"] = current_balance - after
+    return out
+
+
+def add_balance_monthly(uid, df, current_balance):
+    """เติมคอลัมน์ 'เงินเก็บ' (ยอด ณ สิ้นเดือน) สำหรับกราฟรายเดือน"""
+    res = (
+        supabase.table("daily_records")
+        .select("record_date, income, expense")
+        .eq("user_id", uid)
+        .execute()
+    )
+    daily = [
+        (pd.Timestamp(r["record_date"]), float(r["income"]) - float(r["expense"]))
+        for r in res.data
+    ]
+
+    out = df.copy()
+    net_m = out["รายรับ"] - out["รายจ่าย"]
+    later_months = net_m[::-1].cumsum()[::-1] - net_m
+
+    values = []
+    for month, later in later_months.items():
+        month_end = month + pd.offsets.MonthEnd(0)
+        daily_after = sum(n for d, n in daily if d > month_end)
+        values.append(current_balance - later - daily_after)
+
+    out["เงินเก็บ"] = values
+    return out
+
+
+def show_bar_chart(df, monthly=False, goal=0.0, goal_name=""):
+    """แท่งรายรับ/รายจ่าย (แกนซ้าย) + เส้นเงินเก็บและเส้นเป้าหมาย (แกนขวา)"""
     data = df.reset_index()
     time_col = data.columns[0]
-    data = data.melt(
-        id_vars=time_col,
+    data["label"] = data[time_col].dt.strftime("%m/%Y" if monthly else "%d/%m")
+    order = list(dict.fromkeys(data["label"]))
+
+    bars_data = data.melt(
+        id_vars=[time_col, "label"],
         value_vars=["รายรับ", "รายจ่าย"],
         var_name="ประเภท",
         value_name="จำนวนเงิน"
     )
 
-    if monthly:
-        data["label"] = data[time_col].dt.strftime("%m/%Y")
-    else:
-        data["label"] = data[time_col].dt.strftime("%d/%m")
-
-    order = list(dict.fromkeys(data["label"]))
-
-    # เผื่อที่ว่างเหนือแท่งสูงสุดอีก 20% (แก้เลข 1.2 ได้)
-    max_val = float(data["จำนวนเงิน"].max())
+    # แกนซ้าย: เผื่อที่ว่างเหนือแท่งสูงสุด 20%
+    max_val = float(bars_data["จำนวนเงิน"].max())
     y_max = max_val * 1.2 if max_val > 0 else 100
 
-    chart = (
-        alt.Chart(data)
-        .mark_bar(
-            cornerRadiusTopLeft=6,
-            cornerRadiusTopRight=6
-        )
+    x_enc = alt.X(
+        "label:N", sort=order, title=None,
+        axis=alt.Axis(labelAngle=-45)
+    )
+
+    bars = (
+        alt.Chart(bars_data)
+        .mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6)
         .encode(
-            x=alt.X(
-                "label:N",
-                sort=order,
-                title=None,
-                axis=alt.Axis(labelAngle=-45)
-            ),
+            x=x_enc,
             xOffset=alt.XOffset("ประเภท:N", sort=["รายรับ", "รายจ่าย"]),
             y=alt.Y(
                 "จำนวนเงิน:Q",
-                title="บาท",
+                title="รายรับ / รายจ่าย (บาท)",
                 scale=alt.Scale(domain=[0, y_max])
             ),
             color=alt.Color(
@@ -202,9 +231,69 @@ def show_bar_chart(df, monthly=False):
             ),
             tooltip=["label", "ประเภท", "จำนวนเงิน"]
         )
+    )
+
+    if "เงินเก็บ" not in data.columns:
+        chart = bars.properties(height=380, width=520)
+        st.altair_chart(chart, use_container_width=False)
+        return
+
+    # แกนขวา: ครอบคลุมทั้งเงินเก็บและเป้าหมาย เผื่อที่ว่าง 20%
+    top = max(float(data["เงินเก็บ"].max()), float(goal))
+    low = min(0.0, float(data["เงินเก็บ"].min()))
+    span = top - low
+    r_max = top + span * 0.2 if span > 0 else 100
+    bal_scale = alt.Scale(domain=[low, r_max])
+
+    right_axis = alt.Axis(
+        orient="right", titleColor="#3498DB", labelColor="#3498DB"
+    )
+
+    line = (
+        alt.Chart(data)
+        .mark_line(
+            color="#3498DB", strokeWidth=3,
+            point=alt.OverlayMarkDef(color="#3498DB", size=60)
+        )
+        .encode(
+            x=x_enc,
+            y=alt.Y(
+                "เงินเก็บ:Q", title="เงินเก็บ (บาท)",
+                scale=bal_scale, axis=right_axis
+            ),
+            tooltip=[
+                alt.Tooltip("label:N", title="ช่วง"),
+                alt.Tooltip("เงินเก็บ:Q", title="เงินเก็บ", format=",.2f")
+            ]
+        )
+    )
+
+    right_layers = line
+    if goal > 0:
+        rule = (
+            alt.Chart(pd.DataFrame({"เป้าหมาย": [float(goal)]}))
+            .mark_rule(color="#F39C12", strokeWidth=1.5, strokeDash=[6, 4])
+            .encode(
+                y=alt.Y(
+                    "เป้าหมาย:Q", title="เงินเก็บ (บาท)",
+                    scale=bal_scale, axis=right_axis
+                ),
+                tooltip=[alt.Tooltip("เป้าหมาย:Q", format=",.2f")]
+            )
+        )
+        right_layers = alt.layer(line, rule)
+
+    chart = (
+        alt.layer(bars, right_layers)
+        .resolve_scale(y="independent")
         .properties(height=380, width=520)
     )
     st.altair_chart(chart, use_container_width=False)
+
+    text = "🔵 เส้นฟ้า = เงินเก็บ (อ่านที่แกนขวา) · แท่ง = รายรับ/รายจ่าย (แกนซ้าย)"
+    if goal > 0:
+        text += f" · 🟠 เส้นประ = เป้าหมาย {goal_name} {goal:,.2f} บาท"
+    st.caption(text)
 
 
 
@@ -410,7 +499,6 @@ if "player_data_loaded" not in st.session_state:
             player_data["goal"]
         )
         st.session_state.item_name = player_data["item"]
-        st.session_state.player_data_loaded = True
         st.session_state.player_data_loaded = True
 
         # รวมยอดเก่าเข้ารายเดือน (ทำครั้งเดียวตอนเปิดแอป)
@@ -661,7 +749,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p::after {
     }
 }
 
-.gq-title { font-size: 20px !important; font-weight: 300 !important; }
+.gq-title { font-size: 20px !important; font-weight: 300 !important; color: #050b1a !important; opacity: 1 !important; }
 
 </style>
 """, unsafe_allow_html=True)
@@ -858,7 +946,12 @@ if menu == "🎯สรุปผล":
                     "ข้อมูลจะถูกรวมเป็นรายเดือนเมื่อเก่ากว่า 30 วัน"
                 )
             else:
-                show_bar_chart(df, monthly=True)
+                chart_df = add_balance_monthly(uid, df, st.session_state.balance)
+                show_bar_chart(
+                    chart_df, monthly=True,
+                    goal=st.session_state.goal,
+                    goal_name=st.session_state.item_name
+                )
                 table = df.copy()
                 table.index = table.index.strftime("%m/%Y")
                 table["คงเหลือ"] = table["รายรับ"] - table["รายจ่าย"]
@@ -878,7 +971,12 @@ if menu == "🎯สรุปผล":
             if total_in == 0 and total_out == 0:
                 st.info(f"ใน {days} วันที่ผ่านมายังไม่มีการบันทึก")
             else:
-                show_bar_chart(df)
+                chart_df = add_balance_daily(df, st.session_state.balance)
+                show_bar_chart(
+                    chart_df,
+                    goal=st.session_state.goal,
+                    goal_name=st.session_state.item_name
+                )
 
     except Exception as e:
         st.error(f"โหลดกราฟไม่สำเร็จ: {e}")
