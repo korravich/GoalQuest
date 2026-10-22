@@ -356,15 +356,15 @@ if (
 # ถ้ายังไม่ได้เข้าสู่ระบบ ให้แสดงหน้าสมัครและล็อกอิน
 if "user_id" not in st.session_state:
     st.markdown(
-            "<div style='display:flex;align-items:center;gap:14px;margin-bottom:4px;'>"
-            "<div style='background:#06060a;border-radius:16px;padding:10px;display:flex;'>"
-            + korvian_logo_svg(44) +
-            "</div>"
-            "<span style='font-size:44px;font-weight:800;letter-spacing:2px;'>Korvian</span>"
-            "</div>",
-            unsafe_allow_html=True
-        )
-        st.caption("Your Future Depends on What You Do Today (beta)")
+        "<div style='display:flex;align-items:center;gap:14px;margin-bottom:4px;'>"
+        "<div style='background:#06060a;border-radius:16px;padding:10px;display:flex;'>"
+        + korvian_logo_svg(44) +
+        "</div>"
+        "<span style='font-size:44px;font-weight:800;letter-spacing:2px;'>Korvian</span>"
+        "</div>",
+        unsafe_allow_html=True
+    )
+    st.caption("Your Future Depends on What You Do Today (beta)")
     st.subheader("Start your goals")
 
     login_tab, signup_tab = st.tabs(
