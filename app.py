@@ -634,6 +634,41 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label p::after {
 /* QUEST ลดลงจาก 72px */
 .gq-title { font-size: 40px !important; }
 
+/* ===== มือถือ/จอสัมผัส: ซ่อน sidebar สนิท เหลือแท็บเล็กๆ ===== */
+@media (hover: none), (max-width: 768px) {
+    section[data-testid="stSidebar"] {
+        overflow: visible !important;
+        transform: translateX(-100%) !important;
+        box-shadow: none !important;
+    }
+    section[data-testid="stSidebar"].gq-shut {
+        transform: translateX(-100%) !important;
+        box-shadow: none !important;
+    }
+    section[data-testid="stSidebar"].gq-open,
+    section[data-testid="stSidebar"].gq-full {
+        transform: translateX(0) !important;
+        box-shadow: 4px 0 24px rgba(20,33,61,.18) !important;
+    }
+
+    /* แท็บเล็กๆ ยื่นออกจากขอบ sidebar มาติดขอบจอ */
+    section[data-testid="stSidebar"]::after {
+        left: 100% !important;
+        right: auto !important;
+        width: 14px !important;
+        height: 56px !important;
+        margin-top: -28px !important;
+        border-radius: 0 10px 10px 0 !important;
+        background: #4b91e6 !important;
+        opacity: .85 !important;
+        pointer-events: auto !important;
+    }
+    section[data-testid="stSidebar"].gq-open::after,
+    section[data-testid="stSidebar"].gq-full::after {
+        opacity: 0 !important;
+    }
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -1326,7 +1361,9 @@ if st.sidebar.button(
 
 if st.session_state.get("confirm_reset_all", False):
     st.sidebar.warning(
-        "ต้องการรีเซ็ตข้อมูลในบัญชีนี้หรือไม่?"
+        "ต้องการรีเซ็ตข้อมูลในบัญชีนี้หรือไม่? "
+        "จะล้างเงินเก็บ เป้าหมาย ประวัติรายรับ-รายจ่ายทั้งหมด "
+        "และกราฟ จะย้อนกลับไม่ได้"
     )
 
     confirm_col, cancel_col = st.sidebar.columns(2)
@@ -1334,13 +1371,18 @@ if st.session_state.get("confirm_reset_all", False):
     with confirm_col:
         if st.button("ยืนยันรีเซ็ต", key="confirm_all_reset"):
             try:
+                uid = st.session_state["user_id"]
+
+                # 1) ล้างประวัติรายรับ-รายจ่ายก่อน (ถ้าพลาด จะยังไม่รีเซ็ตส่วนอื่น)
+                supabase.table("daily_records").delete().eq("user_id", uid).execute()
+                supabase.table("monthly_records").delete().eq("user_id", uid).execute()
+
+                # 2) รีเซ็ตเงินเก็บและเป้าหมาย
                 supabase.table("player_data").update({
                     "balance": 0,
                     "goal": "0",
                     "item": "สิ่งที่อยากได้"
-                }).eq(
-                    "user_id", st.session_state["user_id"]
-                ).execute()
+                }).eq("user_id", uid).execute()
 
                 st.session_state.balance = 0.0
                 st.session_state.goal = 0.0
