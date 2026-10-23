@@ -26,6 +26,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+st.markdown(
+    "<style>[data-testid='stMainBlockContainer'], .block-container "
+    "{ padding-bottom: 4rem !important; }</style>",
+    unsafe_allow_html=True
+)
 if "_icon_error" in globals():
     st.warning(f"โหลดไอคอนไม่ได้: {_icon_error}")
 
@@ -73,7 +78,7 @@ def save_persistent_session(user_id, access_token, refresh_token):
             token,
             max_age=30 * 24 * 60 * 60,
             secure=True,
-            same_site="lax"
+            same_site="none"
         )
     
     except Exception as e:
