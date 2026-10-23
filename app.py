@@ -316,9 +316,7 @@ def show_bar_chart(df, monthly=False, goal=0.0, goal_name=""):
 
 # คืนสถานะการเข้าสู่ระบบจาก Streamlit session
 # คืนสถานะล็อกอินจาก session ที่บันทึกไว้
-_dbg = []
 cookie_token = cookie_controller.get("gq_session")
-_dbg.append(f"cookie: {'found' if cookie_token else 'none'}")
 
 if "user_id" not in st.session_state and cookie_token:
     try:
@@ -336,16 +334,11 @@ if "user_id" not in st.session_state and cookie_token:
         )
 
         saved = response.data if response else None
-        _dbg.append(f"db row: {'found' if saved else 'none'}")
 
         if saved:
             # ใช้ refresh token ขอ token ชุดใหม่ (ไม่ใช้ access token เก่า)
             refreshed = supabase.auth.refresh_session(
                 saved["refresh_token"]
-            )
-            _dbg.append(
-                "refresh: ok" if (refreshed.session and refreshed.user)
-                else "refresh: no session"
             )
 
             if refreshed.session and refreshed.user:
@@ -362,8 +355,8 @@ if "user_id" not in st.session_state and cookie_token:
                 st.session_state["user_email"] = refreshed.user.email or ""
                 st.session_state["access_token"] = new_access
                 st.session_state["refresh_token"] = new_refresh
-    except Exception as e:
-        _dbg.append(f"error: {type(e).__name__}: {str(e)[:150]}")
+    except Exception:
+        pass
 if (
     "user_id" in st.session_state
     and "access_token" in st.session_state
@@ -389,7 +382,6 @@ if "user_id" not in st.session_state:
         unsafe_allow_html=True
     )
     st.caption("Your Future Depends on What You Do Today (beta)")
-    st.caption("debug: " + " | ".join(_dbg))
     st.subheader("Start your goals")
 
     login_tab, signup_tab = st.tabs(
