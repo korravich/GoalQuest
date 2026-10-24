@@ -70,7 +70,7 @@ def login_screen(cookie_controller):
         "</div>",
         unsafe_allow_html=True
     )
-    st.caption("Your Future Depends on What You Do Today (beta)")
+    st.caption("Your Future Depends on What You Do Today (v1.1)")
     st.subheader("Start your goals")
 
     login_tab, signup_tab = st.tabs(["เข้าสู่ระบบ", "สมัครสมาชิก"])
